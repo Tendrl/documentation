@@ -1,0 +1,78 @@
+// vim: tw=79
+= Tendrl Project Development Workflow
+
+This document describes the workflow every developer contributing to Tendrl is
+to follow. This includes proposed changes or updates to this workflow itself.
+
+
+== Tools Used
+
+Github Pull Requests::
+All the development is carried out via Pull Request to any of the Tendlr
+repositories. This allows CI checks and code reviews before any code is merged.
+
+Github Issues::
+This is the primary '`repository`' for tracking all the proposed changes to any
+of the sub-projects' codebases. Every Pull Request must have an associated
+Issue.
+
+Jira::
+https://tendrl.atlassian.net[Jira] is used for project planning. Epics are
+broken down into Blueprints. Each Blueprint maps to one or more issues to be
+implemented.
+
+Jira Github Connector::
+https://confluence.atlassian.com/adminjiracloud/connect-jira-cloud-to-github-814188429.html[The
+Connector] automatically links Github Issues to Blueprints in Jira.
+
+
+== Workflow
+
+* Discussions about new features to be introduced are carried out on the
+  https://www.redhat.com/mailman/listinfo/tendrl-devel[mailing list].
+* Feature tracking happens in Jira.
+* Depending upon the size and/or complexity of the feature it may end up being
+  created as either just a Blueprint or an Epic in Jira.
+* Epics are used for release planning, while Blueprints are used for
+  development planning.
+* Blueprints contain the technical information necessary to enable the
+  implementation.
+* Blueprints are then mapped to one or more Issues.
+* Issue description contains the Blueprint id from Jira.
+* Commits made against the Issue, as part of a Pull Request, must have the
+  corresponding Blueprint id in the header to enable the Jira Github Connector
+  to detect and link the commits to the Blueprint.
+* Further discussions are carried out on the Pull Requests, along with
+  automated CI checks and code reviews before they're merged.
+* A Blueprint is marked as completed when all the Issues associated with it
+  have been satisfied by their corresponding Pull Requests being merged.
+
+
+== Release Schedule
+
+Tendrl Core aims to have bi-monthly releases complete with QE, documentation
+and consumable via packages. Feature planning happens with the 2 month release
+windows as a goal.
+
+
+== Release Planning
+
+* Release planning is done with the help of Epics and their Blueprints.
+* Each Blueprint is planned to be implementable in two weeks.
+* Two or more Blueprints can be worked upon in parallel.
+* Timeline estimations are made based on the time required to complete all the
+  Blueprints in the Epic.
+* Development always happens Epic by Epic.
+* Completion of an Epic includes QE, documentation and bug fixes.
+* Bi-monthly releases are comprised of one or more completed Epics. This also
+  implies that every Epic should be planned in such a way as to be
+  release-worthy in under two months.
+
+
+== Tracking
+
+Tendrl Core tracks the status of the project based on the completion of
+Blueprints. Bi-weekly status check meetings happen to discuss the project
+status and includes demos for Blueprints merged since the last meeting.
+
+
