@@ -7,6 +7,10 @@ to follow. This includes proposed changes or updates to this workflow itself.
 
 == Tools Used
 
+Mailing List::
+The https://www.redhat.com/mailman/listinfo/tendrl-devel[tendrl-devel mailing
+list] serves as the primary discussion list.
+
 Github Pull Requests::
 All the development is carried out via Pull Request to any of the Tendlr
 repositories. This allows CI checks and code reviews before any code is merged.
@@ -28,16 +32,17 @@ Connector] automatically links Github Issues to Blueprints in Jira.
 
 == Workflow
 
-* Introductions of any new features and discussions thereof are expected to be proposed on the
-  https://www.redhat.com/mailman/listinfo/tendrl-devel[mailing list].
-* https://tendrl.atlassian.net/[Jira] would be used for feature tracking in current and future releases
-* The size and/or complexity of the feature will determine whether it is best managed as a Blueprint or an Epic in https://tendrl.atlassian.net/[Jira]
+* Introductions of any new features and discussions thereof are expected to be
+  proposed on the mailing list.
+* Jira would be used for feature tracking in the current and future releases.
+* The size and/or complexity of the feature will determine whether it is best
+  managed as a Blueprint or an Epic in Jira.
 * Epics are used for release planning, while Blueprints are used for
   development planning.
 * Blueprints contain the technical information necessary to enable the
   implementation.
 * Blueprints are then mapped to one or more Issues.
-* Issue description contains the Blueprint id from https://tendrl.atlassian.net/[Jira].
+* Issue description contains the Blueprint id from Jira.
 * Commits made against the Issue, as part of a Pull Request, must have the
   corresponding Blueprint id in the header to enable the Jira Github Connector
   to detect and link the commits to the Blueprint.
@@ -49,9 +54,9 @@ Connector] automatically links Github Issues to Blueprints in Jira.
 
 == Release Schedule
 
-Tendrl Core aims to have bi-monthly releases complete with testing, documentation
-and consumable via packages. Feature planning happens with the 2 month release
-windows as a goal.
+Tendrl Core aims to have bi-monthly releases complete with testing,
+documentation and consumable via packages. Feature planning happens with the 2
+month release windows as a goal.
 
 
 == Release Planning
