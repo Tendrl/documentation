@@ -50,7 +50,7 @@ Connector] automatically links Github Issues to Blueprints in Jira.
 
 == Release Schedule
 
-Tendrl Core aims to have bi-monthly releases complete with QE, documentation
+Tendrl Core aims to have bi-monthly releases complete with testing, documentation
 and consumable via packages. Feature planning happens with the 2 month release
 windows as a goal.
 
