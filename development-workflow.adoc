@@ -28,17 +28,16 @@ Connector] automatically links Github Issues to Blueprints in Jira.
 
 == Workflow
 
-* Discussions about new features to be introduced are carried out on the
+* Introductions of any new features and discussions thereof are expected to be proposed on the
   https://www.redhat.com/mailman/listinfo/tendrl-devel[mailing list].
-* Feature tracking happens in Jira.
-* Depending upon the size and/or complexity of the feature it may end up being
-  created as either just a Blueprint or an Epic in Jira.
+* https://tendrl.atlassian.net/[Jira] would be used for feature tracking in current and future releases
+* The size and/or complexity of the feature will determine whether it is best managed as a Blueprint or an Epic in https://tendrl.atlassian.net/[Jira]
 * Epics are used for release planning, while Blueprints are used for
   development planning.
 * Blueprints contain the technical information necessary to enable the
   implementation.
 * Blueprints are then mapped to one or more Issues.
-* Issue description contains the Blueprint id from Jira.
+* Issue description contains the Blueprint id from https://tendrl.atlassian.net/[Jira].
 * Commits made against the Issue, as part of a Pull Request, must have the
   corresponding Blueprint id in the header to enable the Jira Github Connector
   to detect and link the commits to the Blueprint.
@@ -63,10 +62,11 @@ windows as a goal.
 * Timeline estimations are made based on the time required to complete all the
   Blueprints in the Epic.
 * Development always happens Epic by Epic.
-* Completion of an Epic includes QE, documentation and bug fixes.
+* Completion of an Epic includes testing, documentation and bug fixes.
 * Bi-monthly releases are comprised of one or more completed Epics. This also
   implies that every Epic should be planned in such a way as to be
   release-worthy in under two months.
+* Test plans for features will be made available
 
 
 == Tracking
