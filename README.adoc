@@ -1,0 +1,4 @@
+// vim: tw=79
+= documentation
+
+Project-wide documentation

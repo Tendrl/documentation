@@ -1,2 +1,0 @@
-# documentation
-Project-wide documentation
