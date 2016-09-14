@@ -1,0 +1,33 @@
+// vim: tw=79
+= Tendrl Documentation
+
+Welcome to the Tendrl project's documentation repository!
+
+This repository contains documentation applicable to the Tendrl project as a
+whole. This includes design and architecture documents, developer workflow
+details etc. Codebase specific documentation is hosted in the same repository
+as the code.
+
+
+== How to use this repository?
+
+The developement workflow document (development-workflow.adoc) applies to any
+changes to the contents of this repository, as it does to any of the Tendrl
+project codebases.
+
+Should you want to send a pull request against this repository, please follow
+these guidelines:
+
+* Configure your editor to use a hard line break on 79 characters.
+* Don't delete the vim modeline comment at the top of the files.
+* Feel free to add editor specific configuration to the files you author. Just
+  ensure that it doesn't break the asciidoc syntax ie. ensure that it's in a
+  comment.
+* Use http://asciidoctor.org[asciidoctor] to validate the html output produced
+  by the files you've written before committing them.
+
+If you've never written asciidoc before, the
+http://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[asciidoctor syntax
+reference] is the best place to start. Jump into the more detailed
+http://asciidoctor.org/docs/user-manual/[user manual] as you realise the need
+for a feature beyond text formatting.
