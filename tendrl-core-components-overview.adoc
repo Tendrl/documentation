@@ -1,0 +1,77 @@
+// vim: tw=79
+:imagesdir: ./images
+
+= Tendrl Core Components Overview
+
+Tendrl Core Stack provides the essential provisioning, management and
+monitoring capabilities to the supported Storage Systems. The most important
+design principle is that the Core stack should never be affected by the failure
+of any other Stacks that integrates with it. The Core Stack must always be
+self-sufficient.
+
+image::tendrl_core_components_overview.png[Tendrl Core Components Overview]
+
+== Responsibilities of the Individual Core Components
+
+=== Tendrl App (App)
+
+* Frontend/northbound API.
+* This is the integration point for any external management system/frontend
+  with Tendrl, including the Tendrl UI.
+* The App has the necessary logic to understand the state definitions stored in
+  the Central Store and present them over it’s API.
+* The App has the necessary logic to be able to invoke Operations through the
+  Central Store’s Job Queue implementation.
+* The App is completely stateless. All the state is stored in the Central
+  Store. The App essentially acts as a translation proxy between an external
+  system (including Tendrl UI) and the Central Store.
+* The App is intended to be primarily used for systems integration. As such,
+  the API is completely generic and self descriptive. The intended use case is
+  that any system wishing to leverage Tendrl uses the API’s descriptive
+  responses to construct targeted queries for a specific cluster instances
+  being managed by Tendrl.
+
+=== Central Store (Store)
+* The Store is a key-value object store that contains all the state information
+  for a Tendrl based deployment.
+* The Store contains:
+** Storage System State Information in the Storage System’s own representation,
+   without a pre-defined schema.
+** Storage System State Definition, which is a YAML file that describes the
+   access methods, data types and the general layout of the State Information.
+** Operations hierarchy, which is a Job Queue. This also includes updates
+   regarding the Operations being executed.
+** Status of every relevant Tendrl and Storage System process/component that
+   needs to be monitored.
+** Current time series data needed for automated conditional triggers.
+** Provisioning templates.
+** YAML descriptions for each of the Operations specific to every instance of
+   the Storage Systems being managed.
+* Nothing ever happens anywhere in the Tendrl deployment, without it being
+  written to the Store first.
+
+=== Tendrl Node Agent (Agent)
+
+* Primarily handles deployment host based operations.
+* For a host to be managed by Tendrl, an Agent has to run on that host and it
+  must be able to convey it’s own status to the Central Store.
+* Agents are responsible for all operations local to the host they’re on, such
+  as:
+** Hardware interface via an external tool/library. This includes local disk
+   management.
+** Process monitoring for the various system and Storage System daemons,
+   including the Tendrl Bridge via systemd.
+** Invocation of host-local Provisioning Operations.
+** Monitoring and gathering of the system’s status, including collection of
+   time series data.
+* Agents also co-ordinate cluster-wide Operations. One of the Agents becomes a
+  temporary master for an Operation and ensures the appropriate distribution to
+  other Agents. All of this is co-ordinated via the Central Store.
+
+=== Tendrl SDS Bridge (Bridge)
+
+* Provides Tendrl integration for a specific Storage System instance.
+* Bridge is responsible for maintaining the Storage System state in the Central
+  Store.
+* Bridge implements any of the supported Operations to be carried out
+  against the Storage System’s own management interface (CLI, API etc.)

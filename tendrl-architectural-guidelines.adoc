@@ -1,0 +1,203 @@
+// vim: tw=79
+= Tendrl Architectural Guidelines
+
+:toc:
+
+== Goals
+
+* Tendrl is a framework that provides services to Storage Systems, that enable
+  and/or enhance the manageability of these systems.
+* Through the implementation of the core framework and the supporting services,
+  Tendrl provides an interface for the administrator to know the state of the
+  Storage Systems being managed and to perform operations on the
+  various components.
+* The interface presented to the administrator is performant enough to enable
+  dynamic updates to the displayed information at load.
+* The interface presented to the administrator is responsive enough to enable
+  lag-free interactions.
+* The interface should convey the state of the Storage Systems using
+  System-specific terms and representations.
+* Tendrl, as a framework, is generic and abstract enough to allow a low
+  entry barrier for different types of Storage Systems to plug into Tendrl to
+  leverage its services.
+* Tendrl and the Storage Systems communicate with an abstract glue layer, with
+  a well defined interface, which precludes any direct, dependent coupling
+  between the two.
+* Tendrl can be deployed, updated and it’s lifecycle can be managed independent
+  of the Storage Systems.
+* Tendrl can be deployed in a High Availability configuration.
+
+
+== Assumptions
+
+* Tendrl does not need to be a real-time system.
+* Tendrl's interface is not expected to be loaded with hundreds of operational
+  queries per minute, given the nature of the Systems it represents.
+* In a deployed environment, it is easier to update configuration rather than
+  code.
+* Systems and processes can and will fail. Each component must be monitored
+  and every system interaction must allow for fall-backs.
+
+
+== Architectural Guidelines
+
+The guidelines exist to ensure that the Tendrl project as a whole always has a
+singular technical vision and the corresponding direction for the
+implementation. These guidelines could, and should, evolve over time; depending
+upon the direction Tendrl takes as a project.
+
+
+=== The Storage Systems leverage Tendrl.
+
+Tendrl needs to be thought of as a framework which provides services to Storage
+Systems. In this domain, the Storage Systems would choose to leverage one or
+more of the services provided by Tendrl. Neither the Storage Systems or Tendrl
+need to have an explicit dependency upon each other for their core operations.
+
+
+=== Changes in the implementation of one of the connected Systems does not affect the other.
+
+Tendrl and the Storage Systems should be decoupled to an extent that both are
+free to evolve without having to worry about breaking or impacting each other's
+implementation.
+
+
+=== A well defined Glue Layer is the integration point that enables decoupled Systems to connect.
+
+Building on the above points, an abstraction is necessary to ensure that the
+Storage System and Tendrl can communicate with each other. A Glue Layer enables
+this.
+
+The Glue Layer is a well defined interface which both Systems can adhere to. So
+long as this interface is stable, neither of the Systems would be impacted by
+the changes in the implementation of the other.
+
+
+=== Tendrl shouldn’t assume that the Storage Systems could fit into a generic storage model.
+
+It is logical to try and develop a generic storage model for different systems
+to fit into. This facilitates the development of the codebase to be modular,
+based around the abstractions of the generic model.
+
+However, given the diverse nature of the Storage Systems that may wish to
+leverage Tendrl, the generic model that relies upon the existence of specific
+storage domain entities would impose limitations eventually. Specific
+exceptions would eventually creep up that compromise the generic nature of such
+a storage model.
+
+
+=== The Glue Layer is defined in the most abstract of models--by representing System components in an Object Model.
+
+The Object Model is largely based upon the Object Oriented paradigm. The
+generic storage model can be abstracted further to be composed based on
+hierarchical Objects. These Objects have metadata that describes the..
+* States
+* Attributes
+* Relationships
+* Actions
+..of the Objects, among other things.
+
+A rich framework that allows for extensible metadata to be associated with the
+Objects allows for the potential accommodation of diverse Storage Systems,
+without sacrificing the generic nature of Tendrl.
+
+
+=== Tendrl doesn’t need to understand Storage System specific information, but needs merely to be able to display it to allow the Administrator to understand and act upon it.
+
+The Object Model is flexible enough to accommodate current and future metadata
+to describe the Objects. This metadata can be used to display the information
+to the Administrator that makes it legible and allows the Administrator to take
+informed decisions and to initiate the correct Actions with the appropriate
+Parameters. In addition, with the provisions in the metadata, it would be
+possible to convey the information in a `language’ (not to be confused with the
+spoken languages) that is specific to the Storage System.
+
+Automated actions could also be described as part of the Object metadata. This
+would allow Tendrl to respond to Events or changes in the Object States,
+without the explicit involvement of the Administrator, unless specifically
+required.
+
+In any of these cases, Tendrl doesn’t need to understand what a particular
+state or action represents -- it simply needs to know how to convey the
+information to the administrator, gather and provide the appropriate parameters
+and actions to the Storage System on behalf of the Administrator, and/or take
+appropriate actions upon the Objects, as prescribed by the Object metadata.
+
+This also has a side effect that narrows down the scope of Tendrl’s Core.
+Instead of trying to keep up with the specifics of various Storage Systems (and
+the potentially perpetual exercise of fitting new Systems into a generic
+model), Tendrl Core can focus on building a rich Object Model.
+
+
+=== State is stored and updated centrally (as a representation of the Object Model) by the Storage Systems in a Central Store and Tendrl only reads it.
+
+The core functionality of Tendrl is to show the current, accurate State of the
+Storage System to the Administrator. All the interactions are governed by the
+current State of the various Objects. The States are Object specific--defined
+by the metadata.
+
+Any Object described using the Model has an entity that understands it’s State.
+For example, in most cases, the Storage System would be aware of the States of
+the Objects such as a Cluster, Clustered Volumes, Logical Volumes etc., while
+the monitoring system would be aware of the state of physical entities such as
+Hard Drives, Nodes etc. The best way to ensure that the State is represented
+correctly is to ensure that the system responsible for understanding the State
+is the one that keeps it updated.
+
+
+=== Actions, their parameters, queries etc. from the Administrator or Tendrl (in automation cases) are also represented as separate Objects associated with one or more Objects that constitute the State of the Storage System.
+
+Representing the actions, queries etc. as Objects allows for centralised
+maintenance of all the interactions in Tendrl. The Storage Systems monitor
+these Objects and take the necessary actions. The results of these actions are
+also stored as sub-Objects under the hierarchy of the original Action Object.
+
+
+=== Tendrl core should focus on creating a rock-solid communication layer that ties itself, the Central Store and the Storage Systems together.
+
+Given the distributed nature of a Tendrl deployment, the stability and
+reliability of the communication layer forms a central concern to be addressed.
+
+Along with the development of the Object Model, Tendrl Core’s focus needs also
+to be placed upon ensuring reliability for the maintenance of the
+representation of the said Model.
+
+
+=== Central Store for the State with a proper support for persistence, clustering, client side locking and access control enables a distributed, stateless, scalable and highly available system.
+
+With correctly implemented locking and access control policies in the Central
+Store, it is possible to build a distributed system that relies on cheap copies
+of Tendrl Core that can be brought up or teared down to scale based on the
+requirements.
+
+This enables various deployment scenarios such as Containerization, High
+Availability and Redundant configurations.
+
+All of this relies upon the Central Store itself being clustered and highly
+available.
+
+
+=== The Central Store enables journaling as all interactions between Tendrl and the Storage Systems are represented as persistent Objects before their invocation.
+
+Tracking the Actions as Objects in a persistent Store enables journaling as
+these Objects are ensured to have persisted before the actual Actions are
+invoked. Coupling the journaling with client side locking allows for a
+distributed, redundant deployment of Translators that can carry out the
+operations on the Storage Systems.
+
+
+=== Translators are agents deployed close to the Storage Systems, that translate the State of the Storage Systems into the Object Model and the Actions from Tendrl in the form of the Object Model into invocations upon the Storage System.
+
+The Translators would be maintained by the developers of the Storage System.
+They should be as closely coupled with the Storage System as possible to ensure
+the most efficient and resilient communication path between the Central Store
+and the Storage System.
+
+By implementing locking, multiple copies of the Translators can be deployed
+that would ensure: Distribution of the Action invocations across multiple
+Translators Redundancy in the invocation of the  Actions by enabling handover
+to a different Translator should one fail.
+
+The Translators could also be implemented to ensure duplex or simplex
+communication between the Central Store and the Storage System.
+
