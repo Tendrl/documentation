@@ -9,6 +9,17 @@ details etc. Codebase specific documentation is hosted in the same repository
 as the code.
 
 
+== Navigation
+
+* https://github.com/Tendrl/documentation/blob/master/glossary.adoc[Glossary]
+  defines all the terms referenced throughout the documentation. Keep it handy
+  as a reference.
+* https://github.com/Tendrl/documentation/blob/master/tendrl-architectural-guidelines.adoc[Architectural
+  Guidelines] explains the architectural decisions.
+* https://github.com/Tendrl/documentation/blob/master/tendrl-core-components-overview.adoc[Tendrl
+  Core Components Overview] describes the various components in the Core Stack.
+
+
 == How to use this repository?
 
 The developement workflow document (development-workflow.adoc) applies to any
