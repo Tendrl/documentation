@@ -1,12 +1,12 @@
 // vim: tw=79
 = Tendrl Documentation
 
-Welcome to the Tendrl project's documentation repository!
+Welcome to the documentation repository of the Tendrl project!
 
-This repository contains documentation applicable to the Tendrl project as a
-whole. This includes design and architecture documents, developer workflow
-details etc. Codebase specific documentation is hosted in the same repository
-as the code.
+This repository is intended to host documentation for the entire project. It
+covers design and architecture notes; developer workflow detail and similar.
+Notes and documentation specific to the code-base as well as of significance
+to a developer would be hosted in the same repository as the code
 
 
 == How to use this repository?
