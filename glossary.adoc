@@ -1,0 +1,115 @@
+// vim: tw=79
+= Glossary
+
+
+== Tendrl Project
+
+Tendrl::
+Umbrella project that houses all the Stacks.
+
+Stack::
+Stack is a group of sub-projects that together enable a specific set of
+functionalities in a Tendrl deployment. Stacks may be composed of one or more
+sub-projects and/or infrastructure components.
+
+Sub-project::
+An individual codebase housed under the Tendrl project.
+
+Tendrl Core::
+The standalone, self-sufficient Stack that implements the core management,
+provisioning and monitoring functionality supported by Tendrl and exposes it
+over an API.
+
+Tendrl UI::
+A Stack that provides a graphical user interface to the administrator. UI Stack
+leverages the functionality provided by the Tendrl Core Stack via it's API.
+
+
+== Tendrl Core Components
+
+Node::
+A host which can be used as part of a Storage System cluster.
+
+Storage Node::
+Same as Node.
+
+App::
+Tendrl API Application.
+
+API::
+HTTP interface exposed by the App.
+
+Central Store::
+Central datastore that is the single repository of all the data in a Tendrl
+Core deployment.
+
+Agent::
+Component that enables Tendrl Core to manage a Node.
+
+Node Agent::
+Same as Agent.
+
+Bridge::
+Component that implements a Storage System specific interface.
+
+Software Defined Storage (SDS) Bridge::
+Same as Bridge.
+
+
+== Tendrl Core Concepts
+
+State::
+Representation of the Storage System in the Central Store. State includes all
+the relevant information necessary for the App to manage and monitor the
+Storage System. State is comprised of Objects. State is represented in the
+Central Store via a hierarchy of keys and values organised with directories.
+
+State Representation::
+Same as State.
+
+State Definition::
+A YAML file that describes the various parts of the State Representation to the
+App.
+
+State Bridge::
+Part of the Bridge that is specifically responsible for gathering and
+maintaining the Storage System State in the Central Store.
+
+Object::
+Object is any entity from the State representation that is of relevance to the
+App. Objects are made known to the App via the State Definition.
+
+Object State::
+Every Object can be in a specific state at any given point in time. Valid
+Object States and allowed Actions on each of the States are made known to
+the App via the State Definition.
+
+Attribute::
+Properties of the Object that the App needs to know about. Attributes have a
+location (within the State Representation) and a datatype and are made known to
+the App via the State Definition.
+
+Action::
+Action is a method that can be invoked against a specific Object. Actions can
+have Parameters. Actions and the associated Parameters are made known to the
+App via the State Definition.
+
+Parameter::
+Parameters are associated with specific Actions. They have a defined datatype
+and the associated validation.
+
+Operation::
+Operation is an Action that is:
+* either invoked against more than one Object.
+* or comprises of more than one Action.
+Operation can be comprised of multiple Steps. Steps encapsulate Actions.
+Operation's flow is determined based on the outcome of individual Steps that
+get executed in the sequence defined by the Operation. Depending upon the
+Steps, an Operation could be transactional.
+
+Step::
+A Step in an Operation is an atomic grouping of Actions. Step can be a single
+Action as well. Within a single Operation, Steps can have dependencies and
+depending upon the outcome of a single Step the rest of the Steps may or may
+not be executed.
+
