@@ -1,0 +1,140 @@
+// vim: tw=79
+= Overview
+----
+:toc:
+----
+
+Tendrl provides a RESTful APIs accessible via HTTP(s).
+The API exposes operations for managing an enterprise storage cluster. 
+
+Most API endpoints provides a list of actions and/or operations which can be 
+performed depending on the nature of the resource. This approach prevents the
+consumer from manually constructing the URL's and also automatically adapting
+to functanality which might be added later or removed. 
+
+The API provides actions and attributes for each kind of resource with contains 
+mandatory attributes, optional attributes and validation rules which need to be
+satisfied to create a valid resource. 
+
+=== Versioning
+The API will support versioning when there are breaking changes across 
+releases.
+
+The current version is 1.0
+
+The version numbers are a part of the url so the base url for the current 
+version would be
+--------------
+curl https://api.example.com/1.0
+--------------
+
+=== JSON Schema
+
+The API can be accessed over http(s) and all the data is sent and received over
+json.
+
+Every request needs to set the content-type header to application/json.
+----------
+curl -H "Content-Type: application/json" https://api.example.com/1.0
+----------
+
+==== Timestamps
+
+All timestamps will be in iso8601 format.
+----------
+YYYY-MM-DDTHH:MM:SSZ
+----------
+=== Client Errors
+
+There are three types of client errors 
+
+1) Sending a invalid JSON will result in a `400 Bad Request` response.
+
+2) Sending wrong type of JSON values will result in a `400 Bad Request` 
+response.
+
+3) Sending invalid fields will result in a `422 Unprocessable Entity` 
+response. 
+
+=== HTTP Verbs
+
+The API expects the appropriate HTTP verbs for every action.
+
+`HEAD` to retrieve the HTTP header info.
+
+`GET` to retrieve a resource or multiple resources.
+
+`POST` to create a new resource.
+
+`PUT` to update a single resource or collections.
+
+`DELETE` to delete a resource
+
+=== Authentication
+
+The API token needs to be sent in every request in the header 
+`Authorization: Tendrl <API_TOKEN>`. 
+
+----------
+curl -H "Authorization: Tendrl <API_TOKEN>" https://api.example.com/1.0
+----------
+
+=== Actions
+
+The API provides list of actions which can be performed on the mentioned
+resource. The list provides the action name and the http method which needs to
+be used
+
+----------
+curl -XGET https://api.example.com/1.0/clusters/:cluster_id/volume/actions
+----------
+
+=== Attributes
+
+The API provides the list of attributes with datatypes which are available per
+resource. The list of attributes will be marked as mandarory or optional which 
+can be used to create/update the resource. The attributes will be validated for
+proper datatypes and validations when they are sent to the server.
+
+=== Hypermedia
+
+All resources may have a list of actions and/or operations that can be 
+performed on the resource or multiple resources.
+These actions and operations are defined in the response body with the url,
+http method and short description.
+
+=== Pagination
+
+Requests that return multiple resources will be paginated to 10 resources by
+default. You can specify the page with the `?page` parameter and the per page
+with the `?per_page` parameter.  
+
+=== User Agent
+
+Every API request must send a `User-Agent` property in the header to identity 
+the users. The User-Agent property should be the name of your application.
+
+----------
+curl -A "User-Agent: <APP_NAME>"
+----------
+
+=== Timezones
+
+Every API request will use the user defined time zone as default. 
+If you need the response in a specific time zone, you will have to send a 
+`Time-Zone` header in the request which will be used to respond.
+
+----------
+curl -H "Time-Zone: Asia/Kolkata" -XGET https://api.example.com/1.0/
+----------
+
+=== Rate limiting
+
+There is a limit of 5,000 requests per hour.
+Exceeding the rate limit responds back with a `403 Forbidden` response.
+
+=== Queuing
+
+Some operations might take longer to complete, in which case the server 
+responds back with a job key and a `202 Accepted` response.
+The job key can be used to track the status of the requested operation.
