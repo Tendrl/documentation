@@ -1,0 +1,131 @@
+// vim: tw=79
+= Gluster Volume
+
+The document describes the flow for creating a new Gluster volume using the
+Tendrl API.
+
+To begin with, we need to explore the available actions that you can take on a
+volume, to discover the actions we can use the actions API on the
+resource for the defined cluster.
+
+Sample Request
+
+----------
+GET /cluster/:cluster_id/volume/actions
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+{
+  "info":{
+    "type":"get"    "url":"/cluster/:cluster_id/volume/:volume_id/info",
+    "method":"GET"
+  },
+  "create":{
+    "type":"create",
+    "url":"/cluster/:cluster_id/volume/create",
+    "method":"POST"
+  },
+  "start":{
+    "type":"action",
+    "url":"/cluster/:cluster_id/volume/:volume_id/start",
+    "method":"PUT"
+  },
+  "stop":{
+    "type":"action",
+    "url":"/cluster/:cluster_id/volume/:volume_id/stop",
+    "method":"PUT"
+  },
+  "remove_brick":{
+    "type":"action",
+    "url":"/cluster/:cluster_id/volume/:volume_id/remove_brick",
+    "method":"DELETE"
+  },
+  "replace_brick":{
+    "type":"action",
+    "url":"/cluster/:cluster_id/volume/:volume_id/replace_brick",
+    "method":"PUT"
+  }
+}
+----------
+
+From the above response, we can see that we need to use the create action
+`/cluster/:cluster_id/volume/create` to create a new volume with a http method
+POST on it, but we don't know what parameters we need to post to the action, to
+discover the attributes we can use the attributes API
+
+Sample Request
+
+----------
+POST /cluster/:cluster_id/volume/attributes
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+
+{
+  "volname":{
+    "type":"String"
+  },
+  "stripe_count":{
+    "type":"Integer"
+  },
+  "replica_count":{
+    "type":"Integer"
+  },
+  "disperse_count":{
+    "type":"Integer"
+  },
+  "redundancy_count":{
+    "type":"Integer"
+  },
+  "transport":{
+    "type":"String"
+  },
+  "brickdetails":{
+    "type":"list[brick]"
+  },
+  "force":{
+    "type":"Boolean"
+  },
+  "directory":{
+    "type":"String"
+  },
+  "bitrot":{
+    "type":"Boolean"
+  },
+  "scrub-frequency":{
+    "type":"Integer"
+  },
+  "scrub-throttle":{
+    "type":"Integer"
+  }
+}
+----------
+
+From the above response, we now know what attributes are needed to be
+submitted to the create volume API. 
+
+Sample Request
+
+----------
+POST /cluster/:cluster_id/volume/create, -d '{ volname: 'Volume 1',
+stripe_count: 1, replica_count: 3, disperse_count: 3 }'
+----------
+
+Sample Response
+
+----------
+Status: 202 Accepted
+
+{ job_id: "3784922e33e8bec939be5e626e21a174", status: 'processing', sds_type:
+'gluster', action: 'create_volume' }
+----------
+
+The `job_id` can be used to poll the status of the job, i.e create volume. 
+The create volume action queued a job in etcd which will be picked up by the
+bridge/agent depending on the queue type and update the status of the job.
