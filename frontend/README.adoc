@@ -1,0 +1,10 @@
+// vim: tw=79
+= Tendrl Frontend Docs
+
+This section documents all the frontend related details, split among multiple
+sub-sections. Use the following navigation to access specific parts.
+
+* link:development.adoc[*Development:*] dev-env setup & contributing to frontend
+* link:testing.adoc[*Testing:*] _TODO_
+* link:packaging.adoc[*Packaging:*] _TODO_
+* link:deployment.adoc[*Deployment:*] setup a running frontend server instance
