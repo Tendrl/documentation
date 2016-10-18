@@ -74,9 +74,11 @@ $ sudo dnf install -y git nodejs npm
 Then we need the frontend source
 
 ```sh
-$ git clone https://github.com/Tendrl/tendrl_frontend.git
-$ cd tendrl_frontend
+$ git clone https://github.com/skyrings/kitoon.git
+$ cd kitoon
 ```
+
+NOTE: the repository will be changed to https://github.com/Tendrl/tendrl_frontend.git once the code has been migrated to it.
 
 Next we will install the dependencies for the package to build
 
