@@ -1,0 +1,303 @@
+// vim: tw=79
+= Provisioning with Tendrl
+
+:toc:
+
+== Layers of Provisioning
+
+. Bare-metal provisioning brings up the OS on the storage nodes in the specific
+network(s).
+. Tendrl provisioning sets up tendrl api, etcd and node agents on the
+administrator specified storage nodes. It is possible that this could be
+accomplished irrespective of tendrl’s provisioning modules, either by the bare
+metal system directly or as part of image based or template based deployments.
+
+At this point, tendrl itself is up and running and will have imported the host
+information such as cpu, ram, block storage information etc.
+
+Once tendrl is up and running, administrator either imports or creates a new
+cluster. The rest of the document discusses how these operations would be
+implemented via tendrl.
+
+
+== Components
+
+The following components are referred to in the rest of this document.
+
+Provisioner::
+This is the ansible based provisioning system that tendrl relies upon to
+install and upgrade the storage system. Tendrl takes care of setting up the
+necessary user accounts and ssh access to enable this system to function. This
+system is invoked by tendrl as part of the Internal Execution Flow. Examples
+Provisioners are ceph-ansible, ceph-installer and gdeploy.
+
+Provisioning Module::
+This is a collection of various Provisioner Interface Modules and Integration
+Modules that tendrl ships with. This can be delivered as a dependency of the
+node agent package.
+
+Provisioner Interface Module::
+This is the ansible playbook that ships with tendrl core itself which enables
+tendrl core to know that it supports deployments for a specific storage system
+type and version, either for creation or import or both. The module would
+contain the necessary installation and configuration information to be able to
+deploy the Provisioner. It also contains the necessary YAML definitions that
+allow tendrl core to define, invoke and expose (via the api) the various
+provisioning operations, including creation and importing of clusters. In
+addition, the module also contains the code to enable the node agent to
+interface with the Provisioner.
+
+Integration Module::
+This is the ansible playbook that ships with tendrl core itself which enables
+tendrl to deploy the appropriate type and version of the sds bridge for a
+specific storage system deployment. The term Integration Module refers to a
+logical entity, which practically be bundled with the appropriate PPM. The
+Integration Module also enables tendrl to query the version of an existing
+storage system cluster that needs to be imported.
+
+Provisioning Control Node::
+A specific node in a storage system cluster (one node per cluster) which would
+host the Provisioner. This node is the point of origin for ssh connections to
+other nodes in the cluster, which would be under the Provisioner's control.
+
+Provisioning Controller::
+Node agent residing on the Provisioning Control Node. This specific node agent
+instance is responsible for invoking and co-ordinating all the provisioning
+flows. Any node-local executions can be pushed out for the node agent residing
+on those specific nodes to execute, by the Provisioning Controller. An example
+of such a flow is the installation of the sds bridge on specific nodes of the
+cluster using the Integration Module. The Provisioning Controller would also be
+responsible for installing and interfacing with the Provisioner, locally, using
+the Provisioner Interface Module.
+
+
+== Provisioning Scenarios
+
+Tendrl currently needs to invoke a provisioning system to be able to:
+* deploy various storage system components
+* detect the version of an installed and running storage system
+* deploy storage system specific tendrl-sds bridge
+
+This list could be extended in the future to include:
+* additional tendrl stacks
+* storage system specific collectd plugins for the performance monitoring
+stack
+
+Additional requirements could also be added in the future.
+
+There are three provisioning scenarios, based on the layers of provisioning,
+that tendrl needs to address:
+
+Native:: Tendrl itself ships with and is able to natively execute ansible
+playbooks.
+Internal:: Tendrl invokes an ssh based deployment system by setting it up
+first.
+External:: Tendrl invokes a completely external system that it does not need to
+do any kind of setup for and is self-sufficient. This scenario includes systems
+such as puppet or satellite.
+
+NOTE: The terms Internal and External are used here in the context of a
+deployment. This has nothing to do with them being integrated with tendrl as a
+codebase or packaged with tendrl etc. For tendrl as a codebase, the Internal
+systems are still external integrations. They're simply deployed in the same
+deployment environment as the storage system and tendrl itself.
+
+Following are the scopes of these scenarios:
+Native:: Node-local only.
+Internal:: Cluster specific.
+External:: Multi-cluster.
+
+
+=== Native Execution Scenario
+
+In this scenario, tendrl’s node agent would be able to:
+* Execute shell commands directly.
+* Execute ansible playbooks, specifically the Provisioner Provisioning and
+Integration Modules.
+
+Node agent is responsible for handling any interactions with the operating
+system. Node agent is a prerequisite for a working tendrl core stack and is
+guaranteed to be present on every node of the deployment. It is, hence, the
+natural fit for the native execution scenario.
+
+NOTE: Every node agent is able to execute the Native Execution Scenario.
+
+
+=== Internal Execution Scenario
+
+In this scenario, tendrl depends upon Provisioners to setup the storage system.
+Internal execution scenario has the following advantages:
+* The framework capabilities required to be developed for tendrl should also be
+able to serve the external execution scenario.
+* The provisioning systems for both ceph and gluster are already mature and
+useable in this scenario and does not involve any specific domain knowledge on
+tendrl’s part to invoke them.
+
+However, there are two major differences between the operation of tendrl and
+ansible:
+* Ansible executes from a single control node. Tendrl’s architecture is
+decentralised and does not have the concept of a single control node.
+* Ansible uses ssh to gain access to and operate upon the managed nodes. Tendrl
+doesn’t require ssh access to the nodes because the node agents are able to
+execute any necessary shell commands directly.
+
+The following workflow, added to the node agent, using the existing yaml
+definition based workflow framework in tendrl, would be able to fulfil these
+requirements.
+
+NOTE: This workflow is cluster specific and needs to be executed once per
+cluster.
+
+* A specific node can be tagged as the Provisioning Control Node in the central
+store.
+* The node agent on the Provisioning Control Node can identify itself as the
+Provisioning Controller.
+* Should the designated Provisioning Control Node and/or the Provisioning
+Controller be unavailable for any reason, it should be possible to elect a new
+Provisioning Controller.
+* The Provisioning Controller can delegate operations via the other node agents
+for execution on their respective nodes.
+* The Provisioning Control Node is configured with the user account whose ssh key would
+be allowed access to the corresponding account on every other node.
+* The creation of the provisioning user account, sudo configuration to allow
+root privileges to this account and the configuration of ssh access from the
+control node to the other nodes in the cluster between these user accounts can
+all be done via the Native Execution Scenario by each node agent. The
+Provisioning Controller is responsible for invoking this workflow via the
+central store and provides the necessary user account details and the ssh
+public key.
+* Provisioner is installed and configured on the Provisioning
+Control Node. This requires the corresponding Provisioner Interface Module
+to be executed via the Native Execution Flow by the Provisioning Controller.
+* As part of the integration with a storage system, it is also necessary for
+tendrl to understand where the bridge(s) should reside. This logic is part of
+the YAML definitions provided by the Integration Modules.
+
+==== Why the Internal Execution Scenario is Cluster Instance Specific
+
+It is possible that the Provisioner could change depending upon the specific
+version of the storage system. Limiting the scope of the Internal Provisioning
+Scenario allows specially targeted deployments. It also limits the ssh access
+between the nodes of a single cluster. Any changes or updates to the
+Provisioner will also only affect a specific cluster instance, including the
+failure and re-election of the Provisioning Controller.
+
+
+=== External Execution Scenario
+
+TODO: Discussion of the expansion of the node agent deployment on all the nodes,
+including the tendrl api, etcd, monitoring stack etc. This means that any of
+these nodes can function as the Provisioning Control Node, in addition to being
+monitored and provisioned by the node agent.
+
+
+== Workflows
+
+=== Create Cluster
+
+==== What Needs to be Provisioned by Tendrl
+* Storage system (ceph, gluster)
+* Tendrl-sds bridge (specific to the storage system)
+* Layered storage system (nfs-ganesha, samba + ctdb)
+
+==== Flow
+. Tendrl core deployment is up and running with all the Provisioner
+Provisioning Modules installed.
+. Parameters required for provisioning a specific version of the storage system
+are known to tendrl via the YAML definition made available by the Provisioner
+Provisioning Modules.
+. Tendrl API exposes the endpoint to accept a provisioning task with these
+parameters based on the provisioning workflow that pulls in these YAML
+definition files.
+. As part of the required parameters for a create cluster flow, a list of all
+the nodes which will form a part of that cluster needs to be provided. Tendrl
+could internally validate that the node agent is indeed running on all of these
+nodes as expected.
+. The create cluster call also requires the type of storage system and a
+specific version to be deployed. Tendrl can internally validate the support for
+this type-version combination based on the Provisioner Provisioning YAML file
+definitions.
+. Upon receiving the correct create cluster call, tendrl (node agents or
+whoever is eventually deemed to be responsible) designates a Provisioning
+Control Node and the Provisioning Controller.
+. Provisioning Controller invokes the Provisioner Interface Modules to setup
+the Provisioner.
+. Provisioning Controller also invokes and waits upon the successful outcome of
+user account creation via the other node agents that reside on other nodes that
+are to be part of the cluster.
+. Provisioning Controller invokes `ansible ping’ or equivalent to validate the
+connectivity between the Provisioning Control Node and the other nodes in the
+cluster.
+. Provisioning Controller invokes the Provisioner Interface Modules to invoke
+the Provisioner to setup the cluster.
+. Provisioning controller invokes the Native Execution Scenario on the specific
+nodes to deploy the bridge(s) via the central store.
+
+
+== Import Cluster
+
+==== What Needs to be Provisioned by Tendrl
+* Tendrl-sds bridge (specific to the storage system)
+
+==== Flow
+. Tendrl core deployment is made with the node agents on every node of the
+existing cluster.
+. The Provisioner Interface Modules for the specific storage system type and
+version are also deployed. It’s probably best to deploy all the supported
+modules with every tendrl core deployment.
+. Tendrl exposes the import api endpoint to be triggered for importing the
+storage system of a specific type.
+.. If the specifics of the storage system deployment (such as the version, node
+roles etc.) have been provided, the specific version of the bridge could be
+deployed and configured via the Native Execution Scenario using the Integration
+Modules.
+.. If the specifics aren’t made known, it should be possible for probes to be
+executed via the Native Execution Scenario using the Integration Module by
+every node agent in the cluster to gather node local information about the
+storage system deployment.
+. Based on the roles gathered by the probes, the Integration Modules should be
+able to direct the deployment of the bridges on specific nodes and their
+configuration parameters.
+. A Provisioning Control Node and Provisioning Controller could then be
+assigned to invoke the bridge provisioning flows.
+
+
+== Examples
+
+=== Ceph Deployment Using ceph-ansible
+
+. Tendrl core is deployed on the administrator designated storage nodes.
+Deployment includes tendrl api, etcd, node agents and the provisioning modules.
+. Node agents import the host inventory and the provisioning YAML definitions
+into etcd.
+. Tendrl API call is made to initiate the ceph deployment with the following
+details:
+.. List of all the nodes in the cluster
+.. Ceph version
+.. Role of each node in the cluster
+.. Any additional ceph specific parameters as defined by the Provisioner
+Interface Module.
+. List of nodes is validated by checking for a running node agent on each of
+the nodes.
+. Tendrl refers to the provisioning definitions in etcd for the specific
+version of ceph and inokes the workflow.
+. Provisioning Controller is looked up and since none exists, one of the node
+agents is assigned the role and it's node marked as the Provisioning Control
+Node.
+. Provisioning Controller picks up the workflow for execution.
+. Provisioning Controller creates a local system user account with sudo
+privileges to be used for provisioning and generates the ssh keypair for the
+same via the Native Execution Scenario.
+. Provisioning Controller initiates a cluster-wide operation to setup the user
+account for the provisioning operation on each of the cluster nodes, to be
+executed by the corresponding node agents using the Native Execution Scenario.
+. Provisioning Controller invokes the Provisioner Interface Module to initiate
+the setup of the Provisioner.
+. Provisioning Controller verifies that the Provisioner is able to access all
+the nodes using the created user accounts using `ansible ping` or equivalent
+via the Provisioner Interface Module.
+. Provisioning Controller invokes the setup of the cluster using the parameters
+provided by the create cluster API call via the Provisioner Interface Module.
+. Provisioning Controller invokes a flow for the node agents on the ceph
+monitor nodes to deploy the ceph bridge using the Integration Modules, via the
+Native Execution Scenario.
