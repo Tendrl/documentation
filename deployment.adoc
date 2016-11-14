@@ -1,0 +1,85 @@
+// vim: tw=79
+
+:imagesdir: ./images
+:toc:
+
+= Deploying Tendrl
+
+This document serves as the master document that ties together the installation
+of the various tendrl components. Wherever applicable, the individual
+components' installation documentation has been linked to. This document
+primarily talks about the deployment layout and the installation of global
+components such as etcd.
+
+Any tendrl deployment, logically, would look as depicted in the components
+overview diagram below. The exact physical layout and the number of the nodes
+for various deployment scenarios is discussed in the rest of the document.
+
+image::tendrl_core_components_overview.png[Tendrl Core Components Overview]
+
+
+== Deployment Layouts
+
+=== Non-HA Layout
+
+The following (physical or virtual) layout could be used for poc or development
+purposes:
+
+Tendrl Master::
+* web server
+* tendrl api, proxied behind the web server
+* tendrl ui, served via the web server
+* etcd
+
+Storage Node::
+* storage system (ceph, gluster etc.)
+* tendrl node agent
+* tendrl bridge (node agent will install and configure the bridge as
+appropriate, depending upon the storage system)
+
+
+== Component Installation
+
+=== etcd
+
+NOTE: All the commands are run as a regular user that has `sudo` privileges.
+
+* Install https://github.com/coreos/etcd/releases/tag/v2.3.7[etcd >= 2.3.x && <
+3.x].
++
+On CentOS 7, etcd is available in the `extras` repository.
+
+ $ sudo yum install etcd
+
+* By default, etcd will listed on the loopback interface. Edit the etcd
+configuration file `/etc/etcd/etcd.conf` to configure it to listen on the
+public interface.
+* Ensure that the firewall configuration allows inbound connections to etcd.
+* Enable and start the service
+
+ $ sudo systemctl enable etcd.service
+ $ sudo systemctl start etcd.service
+
+
+=== From Source on CentOS 7
+
+NOTE: The definition and flow yaml files are uploaded to etcd by the node
+agents upon starting up. The api application reads these yaml files and brings
+up the endpoints based on them.
+
+Node Agent::
+Install the node agent on every node of the storage cluster using the
+documentation at https://github.com/Tendrl/node_agent/blob/master/README.adoc.
+
+Tendrl API::
+The api installation instructions are in the
+https://github.com/Tendrl/tendrl-api/blob/master/README.adoc[api repository].
+Only follow the instructions from the sections listed below:
+  . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#system-setup[System Setup]
+  . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#install-tendrl-api[Install tendrl-api].
+    * Install only the production dependencies if you want only to run the api.
+    * Install everything if you want to also have the development setup as well.
+  . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#configuration[Configuration].
+  . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#running-on-port-80[Running on Port 80].
+
+
