@@ -37,12 +37,22 @@ Storage Node::
 * tendrl bridge (node agent will install and configure the bridge as
 appropriate, depending upon the storage system)
 
+==== Post Deployment
+
+The following endpoints should be available for client consumption:
+
+frontend:: http://tendrl_master_host/
+api:: http://tendrl_master_host/api/1.0/
+
 
 == Component Installation
 
 === etcd
 
 NOTE: All the commands are run as a regular user that has `sudo` privileges.
+
+IMPORTANT: The etcd connection details are required for deploying all the other
+components.
 
 * Install https://github.com/coreos/etcd/releases/tag/v2.3.7[etcd >= 2.3.x && <
 3.x].
@@ -82,4 +92,23 @@ Only follow the instructions from the sections listed below:
   . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#configuration[Configuration].
   . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#running-on-port-80[Running on Port 80].
 
+Tendrl Frontend::
++
+NOTE: Currently, the frontend is served via apache using the same configuration
+file that ships with and is used by the api, as discussed in Step 2 under the
+https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#running-on-port-80[instructions
+for running the api on port 80].
++
+Before deployment, the frontend needs to be compiled first. The compilation
+instructions are in the section `Step 2: Building from source` in the
+https://github.com/Tendrl/tendrl_frontend/blob/master/docs/deployment.adoc[frontend
+deployment document].
++
+After compilation, copy over the assets in the `dist` directory to
+`/var/www/tendrl`, where apache will serve them from.
+
+ [tendrl_frontend] $ sudo cp -r dist/* /var/www/tendrl/
++
+The frontend should now be available at the root url (eg.
+http://tendrl_master_host/) via apache.
 
