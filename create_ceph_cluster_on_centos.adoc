@@ -1,0 +1,110 @@
+// vim: tw=79
+= Provisioning Ceph Cluster On CentOs
+
+This document describes the mechanism to create ceph cluster on CentOS nodes. It
+also can help the tendrl developer in ceph cluster creation part and ceph cluster
+import part.
+
+
+== Install OS on Each Machines
+
+ * Provisioner Node : CentOs 7
+ * Mon              : CentOs 7
+ * Osd's            : CentOs 7
+
+== Configure Provisioner Node
+ * Installing ansible in provisioner node using epel repo.
+   Run the following command to install the ansible:
+```
+wget http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm
+rpm -ivh epel-release-7-9.noarch.rpm
+```
+ * Install ansible:
+```
+yum install ansible
+```
+ * Update the node:
+```
+yum update
+```
+
+== Configure Mon and Osd nodes :
+ * wget http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm
+ * rpm -ivh epel-release-7-8.noarch.rpm
+ * rpm -Uvh https://download.ceph.com/rpm-jewel/el7/noarch/ceph-release-1-0.el7.noarch.rpm
+ * yum install ceph
+
+== Configuring Firewall
+ * Configure the firewall based on steps involved in OPEN  REQUIRED PORT section
+```
+http://docs.ceph.com/docs/hammer/start/quick-start-preflight/
+```
+== Configuring Network Time Protocol:
+ ** You must configure Network Time Protocol (NTP) on all Ceph monitor
+   nodes and administration nodes. Ensure that Ceph nodes are NTP peers.
+        * As root, install the ntp package:
+                **yum install ntp**
+        * As root, enable the NTP service to be persistent across a reboot:
+                **systemctl enable ntpd**
+        * As root, start the NTP service and ensure it is running:
+                **systemctl start ntpd,
+                systemctl status ntpd**
+        * Ensure that NTP is synchronizing Ceph monitor node clocks properly:
+                **ntpq -p**
+
+== Enabling Password-Less Ssh in Provisioner Node:
+```
+ 1. ssh-keygen
+
+ 2. ssh-copy-id <username>@<hostname> (hostname : centos node names)
+
+ 3. vi ~/.ssh/config
+        Host node1
+          Hostname <hostname>
+          User <uername>
+        Host node2
+          Hostname <hostname>
+          User <uername>
+   (e.g)
+        Host mon
+              Hostname dhcp43-179.lab.eng.blr.redhat.com
+              User root
+        Host osd1
+              Hostname dhcp41-152.lab.eng.blr.redhat.com
+              User root
+        Host osd2
+              Hostname dhcp41-246.lab.eng.blr.redhat.com
+              User root
+
+ 4. chmod 600 ~/.ssh/config
+```
+
+== Configure ceph-ansible in Provisioner Node:
+ * cd /usr/share
+ * git clone https://github.com/ceph/ceph-ansible.git
+ * vi /etc/ansible/hosts (delete all in that file)
+```
+[mons]
+hostnames
+
+[osds]
+hostnames
+```
+ * ansible all -m ping (checks pingable) if not check /etc/ansible/ansible.cfg
+ * cd /usr/share/ceph-ansible/
+ * cp site.yml.sample site.yml
+ * cp group_vars/all.yml.sample group_vars/all.yml
+ * cp group_vars/mons.yml.sample group_vars/mons.yml
+ * cp group_vars/osds.yml.sample group_vars/osds.yml
+ * vi  group_vars/all
+```
+ceph_origin : un comment and choose 'distro'
+monitor_interface : interface (e.g eth0)
+journal_size : journal_size (e.g 10240)
+public_network : (e.g 10.70.40.0/22)
+```
+ * vi  group_vars/osds
+```
+uncomment :  journal_collocation (make it true), devices (edit devices e.g /dev/vdb and /dev/vdc)
+```
+* ansible-playbook site.yml (to run)
