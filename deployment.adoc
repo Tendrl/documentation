@@ -26,7 +26,7 @@ The following (physical or virtual) layout could be used for poc or development
 purposes:
 
 Tendrl Master::
-* web server
+* web server (apache)
 * tendrl api, proxied behind the web server
 * tendrl ui, served via the web server
 * etcd
@@ -43,6 +43,31 @@ The following endpoints should be available for client consumption:
 
 frontend:: http://tendrl_master_host/
 api:: http://tendrl_master_host/api/1.0/
+
+
+== General System Setup Considerations
+
+=== Firewalling
+
+Following are the defaults for various components. Ensure that they're
+configured on the nodes on which these components will run, depending upon your
+chosen layout.
+
+etcd:: tcp/2379
+apache:: tcp/80
+api:: same as apache for production, tcp/9393 for the development server
+frontend:: same as apache
+
+=== SELinux Configuration
+
+Tendrl does not currently support running on SELinux enabled systems. In case
+there are problems running tendrl on such systems, please turn SELinux off.
+
+Should you want to run tendrl on an SELinux enabled system, there is a specific
+SELinux configuration change for apache on CentOS 7 that needs to be made. It
+is covered in the
+https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#running-on-port-80[Running
+on Port 80] section of the api installation documentation.
 
 
 == Component Installation
