@@ -22,7 +22,7 @@ to a developer would be hosted in the same repository as the code
 
 == How to use this repository?
 
-The developement workflow document (development-workflow.adoc) applies to any
+The development workflow document (development-workflow.adoc) applies to any
 changes to the contents of this repository, as it does to any of the Tendrl
 project codebases.
 
@@ -34,11 +34,11 @@ these guidelines:
 * Feel free to add editor specific configuration to the files you author. Just
   ensure that it doesn't break the asciidoc syntax ie. ensure that it's in a
   comment.
-* Use http://asciidoctor.org[asciidoctor] to validate the html output produced
+* Use http://asciidoctor.org[asciidoctor] to validate the HTML output produced
   by the files you've written before committing them.
 
 If you've never written asciidoc before, the
 http://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[asciidoctor syntax
 reference] is the best place to start. Jump into the more detailed
-http://asciidoctor.org/docs/user-manual/[user manual] as you realise the need
+http://asciidoctor.org/docs/user-manual/[user manual] as you realize the need
 for a feature beyond text formatting.
