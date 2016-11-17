@@ -1,0 +1,208 @@
+// vim: tw=79
+:imagesdir: ./images
+
+= Tendrl ceph-mgr integartion for managing ceph cluster
+
+== ceph-mgr - An Introduction
+
+The ceph-mgr includes the core functionality for enabling python modules that
+provides service and exposes CLI hooks. It actually slashes out the persistent
+DB which calamari used to have, and rather get details like pgmap, OSD map,
+MDS map, performance counters etc directly from underlying OSD nodes of the
+cluster and maintains the details in memory. The client modules can have
+persistent piece of data which ceph-mgr stashes. The ceph-manager has got REST
+apis as well exposed, which could used as one protocol to talk to ceph-mgr
+backend.
+
+The below block diagram tries to explain the architecture of ceph-mgr
+
+image::ceph-mgr-arch.png[ceph-mgr Architecture]
+
+== Few Facts
+
+* The ceph-mgr PR is merged upstream and is available ceph baseline
+* ceph-mgr is not meant to provision/create a cluster, rather its meant and
+comes in picture post cluster creation. So from Tendrl point of view the
+storage node provisioning and cluster creation should happen as pre-requisite
+(using ceph-installer or ceph-ansible whatever the call is)
+* ceph-mgr provides set of REST apis (which calamari-lite used to) as one
+protocol exposed to access ceph-mgr backend
+* New protocols could be added in the form of python modules to avoid REST (if
+needed)
+* ceph-mgr has got "ceph tell mgr" mechanism to send management commands to
+ceph-mgr
+
+== Integrating Tendrl with ceph-mgr
+
+There are two options to get Tendrl integrated with ceph-mgr, using REST apis
+or by adding a python module and invoking the same from ceph-bridge on the
+monitor nodes. The below block diagrams try to explain how ceph-mgr would fit
+in Tendrl stack and utilized for management of a ceph cluster
+
+=== Option-1 Tendrl using ceph-mgr REST apis way of integration
+
+image::tendrl-ceph-mgr-rest.png[Tendrl using ceph-mgr REST]
+
+=== Option-2: Tendrl using ceph-mgr python module way of integration
+
+image::tendrl-ceph-mgr-python-mod.png[Tendrl using ceph-mgr python module]
+
+== Analyzed REST APIs
+
+There are certain differences from existing calamari-lite REST api in the
+format of output and also few apis are missing as well. ceph-mgr works on
+concept of single cluster only for ceph so now there is no concept of
+`/api/v2/cluster or /api/v2/cluster/` apis anymore.
+
+=== Existing apis with differences / issues from calamari-lite
+
+* The api `/api/v2/cluster/sync_object/health,fs_map,osd_map,mon_map,
+pg_summary,config` always return 500 error
+* There is no `/api/v2/cluster` so its not possible to get cluster-id from
+ceph-mgr
+* There is a difference in output format of listing api of storage nodes of
+cluster
+
+ceph-mgr: `/api/v2/cluster/server`
+
+```
+[
+    {
+        "hostname": "<FQDN name>",
+        "ceph_version": "ceph version v0.70-29370-g0fe9231 (0fe92311d2ad412301e7e17f88d4eaef9ec6d2d6)",
+        "services": [
+            {
+                "type": "mon",
+                "id": "a"
+            },
+            {
+                "type": "mds",
+                "id": "a"
+            },
+            {
+                "type": "osd",
+                "id": "0"
+            },
+            {
+                "type": "osd",
+                "id": "1"
+            },
+            {
+                "type": "osd",
+                "id": "2"
+            }
+        ]
+    }
+]
+```
+
+calamari-lite: `/api/v2/cluster/server`
+
+```
+[
+    {
+        "fqdn": "<FQDN name>",
+        "hostname": "<name>",
+        "services": [
+            {
+                "fsid": "0c581569-ab59-4d6f-97da-313eb27e01be",
+                "type": "mon",
+                "id": "<id>",
+                "running": true
+            }
+        ],
+        "frontend_addr": "<IP>",
+        "backend_addr": null,
+        "frontend_iface": null,
+        "backend_iface": null,
+        "managed": true,
+        "last_contact": "2016-09-21T08:33:21.886334+00:00",
+        "boot_time": "1970-01-01T00:00:00+00:00",
+        "ceph_version": null
+    }
+]
+```
+
+* There is difference in output format of OSD listing apis
+
+ceph-mgr: ``/api/v2/cluster/osd`
+
+```
+[
+    {
+        "id": 0,
+        "uuid": "9539aa28-8e36-40e3-af1b-3ad62337e23a",
+        "up": true,
+        "reweight": 1.0,
+        "server": "<FQDN name>",
+        "pools": [
+            0,
+            1,
+            2
+        ],
+        "valid_commands": "('scrub', 'deep_scrub', 'repair')",
+        "public_addr": "<IP>:6800/6595",
+        "cluster_addr": "<IP>:6801/6595"
+    }
+]
+```
+
+calamari-lite: ``/api/v2/cluster/<fsid>/osd`
+
+```
+[
+    {
+        "uuid": "712bd0d7-eb39-4fa9-bef5-0b39dd0f522e",
+        "up": true,
+        "in": true,
+        "id": 0,
+        "reweight": 1.0,
+        "server": "<FQDN name>",
+        "pools": [],
+        "valid_commands": [
+            "scrub",
+            "deep_scrub",
+            "repair"
+        ],
+        "public_addr": "<IP>:6800/25957",
+        "cluster_addr": "<IP>:6801/25957",
+        "crush_node_ancestry": [
+            [
+                -2,
+                -1
+            ]
+        ],
+        "backend_partition_path": "unknown",
+        "backend_device_node": "unknown",
+        "osd_data": "/var/lib/ceph/osd/mycluster-0",
+        "osd_journal": "/var/lib/ceph/osd/mycluster-0/journal"
+    }
+]
+```
+
+* `/api/v2/cluster/crush_rule` does not provide all the options which could be
+passed using ceph CLI
+
+=== Missing / Required apis
+
+Below are few apis which would be required if Tendrl decides to integrate with
+ceph-mgr using REST protocol
+
+* `/api/v2/cluster` to get the details like name and id of the cluster.
+Otherwise Tendrl would always have to default the name to `ceph` and use randomly
+created UUID as cluster-id
+* `/api/v2/cluster/mon/<mon id>/status` as it was used in skyring to get
+additional status details of the monitor nodes
+* `/api/v1/cluster/health_counters` required for aggregating the object
+counts etc for the cluster (which gets reported in dashboards). Not sure if
+`ceph tell mgr osd perf` could be used for this purpose.
+More analysis required.*
+Note: I understand we were using old version of api, but somehow this detail is
+required and if `ceph tell mgr` help, well and good.
+* `/api/v2/cluster/crush_node` for creation of crush map while create cluster
+flow
+
+=== Missing framework components / items in ceph-mgr for Tendrl
+
+* Need to write a python module from scratch to be consumed from Tendrl's
+ceph-bridge (if option - 2 is used above for integration with Tendrl).
