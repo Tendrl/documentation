@@ -1,7 +1,7 @@
 // vim: tw=79
 = Gluster Volume
 
-The document describes the flows related to a Gluster volume.
+The document describes the flows related to Gluster volumes.
 
 == List of available clusters
 
@@ -117,12 +117,6 @@ Status: 200 OK
 	}]
 }]
 ----------
-
-From the above response you can see we can follow multiple flows inside the
-cluster, to create a new volume i.e GlusterCreateVolume, no existing volume is
-needed, but to perform flows like GlusterDeleteVolume, GlusterStartVolume and
-GlusterStopVolume we need the list of volumes. See below to fetch list of
-volumes.
 
 === List Volumes
 
