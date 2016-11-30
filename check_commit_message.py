@@ -7,7 +7,7 @@ import requests
 commit_msg = str(os.environ['TRAVIS_COMMIT_MSG'])
 tendrl_bug_id = None
 tendrl_spec = None
-github_base_url = "http://github.com/Tendrl"
+github_base_url = "http://github.com"
 
 
 # Extract "tendrl-bug-id" and "tendrl-spec" name from the commit message
@@ -29,8 +29,7 @@ if tendrl_bug_id is None:
                     "your commit msg")
 
 if tendrl_bug_id:
-    issue = "%s/%s/issues/%s" % (github_base_url, tendrl_bug_id.split(
-        "/")[0], tendrl_bug_id.split("/")[-1])
+    issue = "%s/%s" % (github_base_url, tendrl_bug_id.replace("#", "/issues/"))
     if requests.get(issue).status_code != 200:
         raise Exception("Tendrl Bug specified in git commit msg not "
                         "found!!\n"
