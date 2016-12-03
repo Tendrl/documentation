@@ -10,7 +10,7 @@ below.
 Sample Request
 
 ----------
-GET /moitoring/nodes/<node_name>/monitored_types
+GET /monitoring/nodes/<node_name>/monitored_types
 ----------
 
 Sample Response
