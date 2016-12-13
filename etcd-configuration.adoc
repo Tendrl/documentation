@@ -1,0 +1,51 @@
+// vim: tw=79
+= etcd installation and configuration for Tendrl
+
+== etcd
+etcd is an open-source distributed, consistent key value store that provides a
+reliable way to store and access the data for shared configuration and service
+discovery across a cluster. Tendrl is using etcd to store the yaml files, other
+configuration files and its data.
+
+== Installation
+etcd can be installed in any server. However for tendrl application, it can be
+installed in the server where tendrl-api is installed. The package etcd can be
+installed by running "yum install etcd"
+
+== Configuration
+After installing the etcd, it needs some configuration changes before starting
+the etcd service.
+Enable all the lines where there is localhost written in /etc/etcd/etcd.conf
+and replace localhost with actual IP of the machine and then start etcd server
+
+ETCD_LISTEN_PEER_URLS="http://<ip-where-etcd-running>:2380"
+ETCD_LISTEN_CLIENT_URLS="http://<ip-where-etcd-running>:2379"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://<ip-where-etcd-running>:2380"
+ETCD_INITIAL_CLUSTER="default=http://<ip-where-etcd-running>:2380"
+ETCD_ADVERTISE_CLIENT_URLS="http://<ip-where-etcd-running>:2379"
+
+After updating the configuration file, the service can be started by running:
+service etcd start
+And can be verify the service by running "service etcd status"
+
+== Configuration for tendrl packages
+tendrl-api::
+etcd.yml is a configuration file used by tendrl-api to locate and connect
+with etcd. This file will be installed by an rpm in /etc/tendrl directory.
+Whereas this file may exist in config directory of the place where its
+deployed thru bundler installation.
+
+=== Configuration
+edit the etcd.yml file and update the 'host' value with the ip of the
+machine where etcd is running. And update the username and password.
+The default username and password will be an empty string.
+ex:-
+  :base_key: ''
+  :host: '<ip-of-the-machine-where-etcd-is-running'
+  :port: 2379
+  :user_name: ''
+  :password: ''
+
+tendrl-node-agent::
+tendr-node-agent uses /etc/tendrl/tendrl.conf file to get the etcd details
+for connection.
