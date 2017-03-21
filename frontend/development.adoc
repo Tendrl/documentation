@@ -1,0 +1,154 @@
+// vim: tw=79
+
+:toc:
+
+'''
+
+= Tendrl Frontend: Development
+
+Tendrl frontend is a static webapp, built from a Node.js project. This document
+details how to contribute to the project as a developer.
+
+== Prerequisites
+
+=== Required skills/expertise
+
+* Experience of webapplication development
+* Understanding of JavaScript, CSS, HTML
+* Familiarity with Node.js & npm
+* Familiarity with angularjs
+
+=== Setting up workstation
+
+Make sure you have `git`, `nodejs`, `npm` installed in your system, along with
+your favorite code-editor & browser with devtools (latest Mozilla Firefox or
+Google Chrome recommended).
+
+Follow your platform's own process to set these up. On a Fedora PC, you'll use
+
+```sh
+$ sudo dnf install -y git nodejs npm
+```
+
+=== Obtaining the source
+
+Fork the https://github.com/Tendrl/tendrl_frontend[upstream repo] to your own
+GitHub account.
+
+*This is required.*
+
+You will be working/making changes on your own repo, and create
+https://help.github.com/articles/about-pull-requests/[pull requests] to submit
+changes to the upstream. Upon peer-review, those changes will be merged, if
+everything went well. You should never directly push to the upstream, even if
+you have write access.
+
+Once forked, you can clone the repo to your workstation for development:
+
+```sh
+$ git clone git@github.com:GitHubUsername/tendrl_frontend.git
+```
+
+=== Reaching out
+
+To communicate with the existing developers, ask for help/clarifications etc.
+send an email to tendrl-devel@redhat.com prepending `[Frontend]` in the subject
+line. This is the mailing list for Tendrl developers, and to be in the loop you
+should subscribe here: https://www.redhat.com/mailman/listinfo/tendrl-devel.
+
+== Contributing
+
+=== Coding guidelines
+
+Follow standard frontend development best practices to work on the code.
+Consult http://taitems.github.io/Front-End-Development-Guidelines/[this] and
+https://isobar-idev.github.io/code-standards/[this] consolidated guides for
+further details.
+
+In case of confusion or conflict of opinions, please
+https://github.com/Tendrl/tendrl_frontend/issues/new[create an issue] to start
+the discussion.
+
+=== Building from source
+
+Within the git cloned source directory, run the following commands to build the
+app. You should be able to build from the source successfully before making any
+changes to the source.
+
+
+```sh
+$ sudo npm install -g gulp tsd
+$ npm install
+$ tsd install
+$ gulp compile
+```
+
+Upon success of all the steps, you should have the build artifacts in `./dist/`
+subdirectory.
+
+=== Running a dev-server
+
+To run and test the build locally, you can use various static file server over
+HTTP. We recommend using `http-server` module, however, httpd/nginx etc can as
+well be used.
+
+
+```sh
+$ npm install -g http-server
+$ cd dist
+$ http-server # starts the web-server with doc-root as `pwd`
+```
+
+The advantage of using `http-server` module is that, it's easy to use it with
+another existing server which can handle the request, which the test server is
+incapable of serving.
+
+
+```sh
+$ http-server -P http://production.server/
+```
+
+You should be able to browse the app, running on test server by visiting
+http://127.0.0.1:8080 from your browser.
+
+=== Making changes
+
+* Make sure to pull from `upstream/master` before starting to work on something
+* Preferably create a branch, after the pull to work on a specific issue
+* Fix one thing per commit - neither more, nor less
+* Fixing an issue may require a bunch of commits - that's okay
+* Give meaningful commit messages, if necessary add descriptions
+* Signing off code isn't mandatory but is recommended
+* Do not introduce different line-ending conventions in your code (especially
+if using non-*nix systems)
+* Comment/document your code in a way, any new contributor can understand the
+concept behind the implementation
+* Make sure to write tests for the feature you add
+* Make sure not to break tests of other features while working on one
+
+=== Submitting pull requests
+
+Once you've successfully made some changes, built, ran, tested and pushed to
+your GitHub remote - then you should submit a pull request for the changes to
+be applied on the upstream repo.
+
+Use https://help.github.com/articles/about-pull-requests/[GitHub's interface]
+to create new pull requests. Once submitted, the code will go through some
+automated tests, integration and peer-reviews.
+
+You might be asked for clarification or requested to update your code depending
+on the review. You can append new commits to fix those nits on the same branch
+of your repo, and the pull request should be automatically updated to reflect
+those changes.
+
+Once approved, your code will be merged with the upstream.
+
+Rejoice!
+
+== Next steps
+
+If you enjoyed contributing to Tendrl frontend, pick up another issue. If you
+need help, reach out to us on mailing list. If you've successfully submitted a
+few changes, feel free to ask to be a member of the GitHub org.
+
+_May the source be with you._
