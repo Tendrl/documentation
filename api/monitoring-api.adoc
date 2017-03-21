@@ -1,0 +1,77 @@
+// vim: tw=79
+= Get monitoring statistics
+
+The document describes the procedure for fetching statistics from time series
+database.
+
+To explore the resources that are monitored, we can use the api described
+below.
+
+Sample Request
+
+----------
+GET /moitoring/nodes/<node_name>/monitored_types
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+
+[{
+  type: string,
+  description: the resource name,
+}]
+
+ex:
+['resource_1', 'resource_2', ...]
+----------
+
+The above response which is an array of resource name strings gives different
+statistics that tendrl's monitoring stack maintains in its time series db.
+
+
+Sample Request
+
+----------
+GET /monitoring/nodes/<node_name>/<resource_name>/stats
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+[
+  {
+    "target": {
+      type: string,
+      description: full qualified name of the resource including the
+        node name, a default prefix which gives a namespace to the stats in
+        graphite and name of the resource.
+    },
+    "datapoints": [
+      [{
+          type: float,
+          description: Instant value of target
+        }, {
+          type: long,
+          description: Timestamp at which the value was observed
+      }],....
+    ]
+  }
+]
+
+ex: [
+  {
+    "target": "{graphite_prefix.host_name.metric_name}",
+    "datapoints": [
+      [5.50091681946991, 1478495700],....
+    ]
+  }
+]
+----------
+
+The above response gives the statistics for last 24 hours corresponding to the
+{resource_name} passed to it. If a time range is passed as optional arguements
+to the above api, then the api responds with the statistics for that time
+range as shown below.
