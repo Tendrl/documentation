@@ -1,0 +1,124 @@
+// vim: tw=79
+= Import Cluster
+
+The document describes the steps to import an existing Gluster or Ceph cluster.
+
+=== Flows
+
+Find list of available flows.
+
+Sample Request
+
+----------
+curl -XGET http://127.0.0.1/1.0/Flows
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+[
+  {
+    "name":"GlusterImportCluster",
+    "method":"POST",
+    "attributes":[
+      {
+        "name":"node[]",
+        "type":"List",
+        "required":true
+      },
+      {
+        "help":"Name of the Tendrl managed sds, eg: 'gluster'",
+        "type":"String",
+        "name":"Tendrl_context.sds_name",
+        "required":true
+      },
+      {
+        "help":"Version of the Tendrl managed sds, eg: '3.2.1'",
+        "type":"String",
+        "name":"Tendrl_context.sds_version",
+        "required":true
+      }
+    ]
+  },
+  {
+    "name":"CephImportCluster",
+    "method":"POST",
+    "attributes":[
+      {
+        "name":"node[]",
+        "type":"List",
+        "required":true
+      },
+      {
+        "help":"Name of the Tendrl managed sds, eg: 'ceph'",
+        "type":"String",
+        "name":"Tendrl_context.sds_name",
+        "required":true
+      },
+      {
+        "help":"Version of the Tendrl managed sds, eg: '3.2.1'",
+        "type":"String",
+        "name":"Tendrl_context.sds_version",
+        "required":true
+      }
+    ]
+  }
+]
+----------
+
+The response states the name of the flow, the http method and the list of 
+attributes that need to be sent in order to import the cluster. 
+
+Attributes ending with square brackets imply a list of objects, so in this 
+case it needs a list of nodes. To fetch the list of nodes just follow a 
+convention for building a url with the name between the words 'Get' and 'List', 
+so in this example it would translate to a `GET /GetNodeList`
+
+=== Nodes List
+
+Sample Request
+
+----------
+curl -XGET /1.0/GetNodeList
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+
+[
+  {
+    "node_id":"7026f371-2d8c-4ad7-895f-4d4dcc70ff1c",
+    "fqdn":"dhcp41-239.lab.tendrl.org",
+    "machine_id":"9517b7ace4f34c4c84f261424975c9f7"
+  }
+]
+----------
+
+The response lists the available nodes which can be imported.
+
+=== Import the cluster with available nodes.
+
+Sample Request
+
+----------
+curl -XPOST -H "Content-Type: application/json" \
+-d '{ "node[]": ["7026f371-2d8c-4ad7-895f-4d4dcc70ff1c"], \
+"Tendrl_context.sds_name":"gluster", "Tendrl_context.sds_version":"3.8.3" }' \
+http://127.0.0.1/1.0/GlusterImportCluster 
+----------
+
+Sample Response
+
+----------
+Status: 202 Accepted
+
+{ job_id: "3784922e33e8bec939be5e626e21a174" }
+----------
+
+The `job_id` can be used to poll the status of the job.
+The import cluster action queued a job in etcd which will be picked up by the
+node agent and processed.
+----
