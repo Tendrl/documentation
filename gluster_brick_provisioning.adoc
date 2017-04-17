@@ -1,0 +1,41 @@
+// vim: tw=79
+= Gluster brick provisioning
+
+This document describes some of the conventions followed when tendrl provisions
+bricks for gluster volumes. Also it provides guidelines that user has to follow
+if he creates brick manually and tendrl has to pick that.
+
+== Conventions followed by tendrl for Gluster brick creation
+
+ * User will have to provide just the brick name, disk and node id.
+
+ * Mount point for the brick will be created at "/tendrl_gluster_bricks/<brick_name>_mount"
+
+ * The actual brick path will be "/tendrl_gluster_bricks/<brick_name>_mount/<brick_name>"
+
+ * The brick will made up of lvm logical volume and naming convention used for
+   lvm entities are as follows:
+      - pv   : tendrl_<brick_name>_pv
+      - vg   : tendrl_<brick_name>_vg
+      - pool : tendrl_<brick_name>_pool
+      - lv   : tendrl_<brick_name>_lv
+
+ * Example for a brick with path "/tendrl_gluster_bricks/brick1_mount/brick1":
+      - pv   : tendrl_brick1_pv
+      - vg   : tendrl_brick1_vg
+      - pool : tendrl_brick1_pool
+      - lv   : tendrl_brick1_lv
+
+ * The bricks will be created under the gluster bricks directory which is defaulted
+   to "/tendrl_gluster_bricks". User can change this by modifying the "gluster_bricks_dir"
+   in gluster integration conf file.
+
+== Guidelines for user created bricks
+
+ * User has to create bricks under gluster_bricks directory(defaulted to
+   "/tendrl_gluster_bricks"), so that Tendrl can manage these bricks. Only the
+   bricks under this dir will be treated as gluster bricks by tendrl.
+
+ * The bricks directory is configurable. User can configure the gluster bricks dir
+   by editing "gluster_bricks_dir" in gluster-integration conf file located at
+   /etc/tendrl/gluster-integration/gluster-integration.conf.yaml.sample
