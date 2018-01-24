@@ -1,0 +1,135 @@
+// vim: tw=79
+
+:toc:
+
+# Policy: GitHub organization management
+
+This document outlines the GitHub organization settings, repository settings,
+user roles and privileges, standard operating procedures (SOP) etc. for Tendrl
+(the org).
+
+## Organization Structure
+
+### Owners
+
+* <name>
+* <name>
+
+
+### Teams
+
+[cols="4", options="header"] 
+|===
+|Name
+|Type
+|Maintainer
+|Repos
+
+|...
+|...
+|...
+|...
+|===
+
+### Members
+
+<list of org members>
+
+'''
+
+## Common Guidelines
+
+Following are the common guidelines to follow for most of the operations. In
+rare cases if the common guidelines can't be followed, it should be discussed
+with the community and approved by the owners before implementation.
+
+### For the Org
+
+Consult https://help.github.com/categories/setting-up-and-managing-organizations-and-teams/
+[GitHub's official documentation] for the particulars discussed in this section.
+
+* The org will have at least 2 active owners at any point in time
+* A member must sign the Contributor License Agreement (CLA) before being
+granted the org ownership, team maintainer, or admin privileges
+* Majority of roles and privileges should be delegated to the Teams with
+specific access rights (detailed in next section)
+* By default members should be granted privileges by being added to particular
+Teams (per member access rights management is hard to scale, and if it's really
+required, should be handled on a case-by-case basis)
+* The default user/repository permission should allow members to create new
+repositories and have org-wide read access to all repos (from Settings > Member
+Privileges)
+* The org should https://help.github.com/articles/enabling-third-party-application-restrictions-for-your-organization/
+[restrict 3rd party application], so that an administrative approval is required
+for untrusted services to access org resources
+
+### For the Teams
+
+* Each package and each functional area should have Teams with
+https://help.github.com/articles/repository-permission-levels-for-an-organization/[proper access rights]
+* If required, a Team should be set up even for a single repository to manage
+access rights
+* Each package (may consist of several repos) should have at least 2 teams
+** <package>-contribs: all package repos, all package contributors, write access
+** <package>-admins: all package repos, subset of contributors, admin access
+* Other Functional areas (barring coding) such as Management, QA, L10N, Support
+etc. should have their own teams with custom access rights for their purposes
+* Each team must have at least one dedicated
+https://help.github.com/articles/giving-team-maintainer-permissions-to-an-organization-member/[team maintainer]
+* By default Teams should be created as `visible` and not as `secret`
+
+### For the Users
+
+* Users should be able to read, fork, clone, report issue, participate in code
+review by GitHub's default permission model
+* A user with more than one commit to any repo(s) in the org can request to be
+added as a member
+** This enables the member to be able to create new repo
+** This allows for them to view the existing teams in the org
+** This also allows them to show off Org's membership badge on their profile
+* A member with more than 10 commits to a particular package/repo(s) can request
+to be added to that package's contributor team.
+** This implies for them to obtain write access to those repo(s)
+** It is recommended (but not mandatory) for Team members to sign the CLA
+* Team members leading the development of a repo or a package should be assigned
+to be the Team Maintainer for that team.
+* A team member with sufficient knowledge and experience can request to join the
+package's admin team
+** This allows the member to change settings of the team's repo(s)
+** This allows the member to perform house-keepings for the repo(s)
+** This allows the member to integrate services and webhooks to repo(s)
+* A team member with sufficient experience admin-ing teams can be given Org
+Ownership, if and as required
+** This is the highest level access and allows full control over all org
+settings, including deletion of the org itself
+* In some cases, a person might be contributing to, contracted or hired for
+some particular purposes, and may not require to follow the exact steps for
+their roles. However it's prescribed to update the community about the same
+and update the Organization Structure section accordingly.
+
+'''
+## Standard Operating Procedures
+
+@TODO
+
+### Contributor License Agreement
+
+...
+
+### Requesting Privilege Escalation
+
+...
+
+### Team Formation and Privileges
+
+...
+
+
+### Audit Log and Abuse Flags
+
+...
+
+
+### Arbitrate and Mitigate Access Violations
+
+...
