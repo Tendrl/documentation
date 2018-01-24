@@ -1,0 +1,24 @@
+before_install:
+  - "export TRAVIS_COMMIT_MSG=\\\"$(git log --format=%B --no-merges -n 1)\\"
+  - "pip install requests"
+git:
+  depth: 4
+env:
+- URL=https://github.com/redpen-cc/redpen/releases/download/redpen-1.7.6
+
+install:
+- wget $URL/redpen-1.7.6.tar.gz
+- tar xvf redpen-1.7.6.tar.gz
+- export PATH=$PATH:$PWD/redpen-distribution-1.7.6/bin
+
+language: python
+python:
+  - "2.7"
+addons:
+  packages:
+    - openjdk-8-jdk
+script:
+  - "python check_commit_msg.py"
+  - "redpen -c tendrl-redpen-conf.xml -f asciidoc *.adoc"
+  - "redpen -c tendrl-redpen-conf.xml -f asciidoc api/*.adoc"
+sudo: true

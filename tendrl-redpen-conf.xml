@@ -1,0 +1,42 @@
+<redpen-conf lang="en">
+    <validators>
+        <!--Rules on sentence length-->
+        <validator name="SentenceLength">
+            <property name="max_len" value="120"/>
+        </validator>
+        <validator name="CommaNumber" />
+
+        <!--Rules on expressions-->
+        <validator name="SymbolWithSpace"/>
+        <validator name="SectionLength">
+            <property name="max_char_num" value="2000"/>
+        </validator>
+        <validator name="Contraction" />
+        <validator name="SuccessiveWord" />
+        <validator name="EndOfSentence" />
+        <validator name="FrequentSentenceStart"/>
+        <validator name="UnexpandedAcronym"/>
+        <validator name="WeakExpression"/>
+
+        <!--Rules on sections and paragraphs-->
+        <validator name="ParagraphNumber"/>
+        <validator name="SpaceBeginningOfSentence" />
+        <validator name="ParenthesizedSentence"/>
+        <validator name="VoidSection" />
+        <validator name="GappedSection" />
+        <validator name="SectionLevel" />
+
+        <!--Rules on symbols and terminologies-->
+        <validator name="InvalidSymbol"/>
+        <validator name="Spelling">
+            <property name="list" value="Tendrl,Github,Jira,workflow,tendrl,tendrl-devel,tendrl-gluster-integration,tendrl-ceph-integration,tendrl-common,tendrl-api,tendrl-ui" />
+        </validator>
+        <validator name="WordFrequency"/>
+        <validator name="Hyphenation"/>
+        <validator name="NumberFormat"/>
+
+        <!--Load JavaScript validators-->
+        <validator name="JavaScript" />
+    </validators>
+</redpen-conf>
+
