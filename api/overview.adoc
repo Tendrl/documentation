@@ -4,15 +4,15 @@
 :toc:
 ----
 
-Tendrl provides a RESTful APIs accessible via HTTP(s).
-The API exposes operations for managing an enterprise storage cluster. 
+Tendrl provides APIs accessible via HTTP(s).
+The API exposes operations for managing multiple enterprise storage providers with a single unified interface. 
 
 Most API endpoints provides a list of actions and/or operations which can be 
 performed depending on the nature of the resource. This approach prevents the
 consumer from manually constructing the URL's and also automatically adapting
 to functanality which might be added later or removed. 
 
-The API provides actions and attributes for each kind of resource with contains 
+The API provides actions and attributes for each kind of resource which contains 
 mandatory attributes, optional attributes and validation rules which need to be
 satisfied to create a valid resource. 
 
@@ -25,7 +25,7 @@ The current version is 1.0
 The version numbers are a part of the url so the base url for the current 
 version would be
 --------------
-curl https://api.example.com/1.0
+curl http://127.0.0.1/api/1.0
 --------------
 
 === JSON Schema
@@ -35,7 +35,7 @@ json.
 
 Every request needs to set the content-type header to application/json.
 ----------
-curl -H "Content-Type: application/json" https://api.example.com/1.0
+curl -H "Content-Type: application/json" http://127.0.0.1/api/1.0/ping
 ----------
 
 ==== Timestamps
@@ -79,35 +79,13 @@ The API token needs to be sent in every request in the header
 curl -H "Authorization: Tendrl <API_TOKEN>" https://api.example.com/1.0
 ----------
 
-=== Actions
+=== Flows
 
-The API provides list of actions which can be performed on the mentioned
-resource. The list provides the action name and the http method which needs to
-be used
+The API provides list of flows which can be performed either globally or on a specific resource. The flows provide the url, http method and attributes needed for a specific flow. For ex: Getting list of available flows.
 
 ----------
-curl -XGET https://api.example.com/1.0/clusters/:cluster_id/volume/actions
+curl -XGET http://127.0.0.1/api/1.0/Flows
 ----------
-
-=== Attributes
-
-The API provides the list of attributes with datatypes which are available per
-resource. The list of attributes will be marked as mandarory or optional which 
-can be used to create/update the resource. The attributes will be validated for
-proper datatypes and validations when they are sent to the server.
-
-=== Hypermedia
-
-All resources may have a list of actions and/or operations that can be 
-performed on the resource or multiple resources.
-These actions and operations are defined in the response body with the url,
-http method and short description.
-
-=== Pagination
-
-Requests that return multiple resources will be paginated to 10 resources by
-default. You can specify the page with the `?page` parameter and the per page
-with the `?per_page` parameter.  
 
 === User Agent
 

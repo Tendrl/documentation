@@ -1,0 +1,194 @@
+// vim: tw=79
+= Gluster Volume
+
+The document describes the flows related to Gluster volumes.
+
+== List of available clusters
+
+Find the list of available clusters
+
+----------
+curl -XGET http://127.0.0.1/api/1.0/GetClusterList
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+[{
+	"cluster_id": "5291c055-70d3-4450-9769-2f6fd4932afb",
+	"sds_name": "gluster",
+	"sds_version": "3.9rc1"
+}]
+----------
+
+== Cluster Flows
+
+
+Find the list of available flows for a specific cluster.
+
+----------
+curl -XGET http://127.0.0.1/api/1.0/5291c055-70d3-4450-9769-2f6fd4932afb/Flows
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+[{
+	"name": "GlusterCreateVolume",
+	"method": "POST",
+	"attributes": [{
+		"name": "Volume.volname",
+		"help": "Name of gluster volume",
+		"type": "String",
+		"default": null,
+		"required": true
+	}, {
+		"name": "Volume.bricks",
+		"help": "List of brick mnt_paths for volume",
+		"type": "List",
+		"default": null,
+		"required": true
+	}, {
+		"name": "Volume.stripe_count",
+		"help": "Stripe count of volume",
+		"type": "Integer",
+		"default": null,
+		"required": false
+	}, {
+		"name": "Volume.replica_count",
+		"help": "Replica count of volume",
+		"type": "Integer",
+		"default": null,
+		"required": false
+	}, {
+		"name": "Volume.arbiter_count",
+		"help": "Arbiter count of volume",
+		"type": "Integer",
+		"default": null,
+		"required": false
+	}, {
+		"name": "Volume.disperse_count",
+		"help": "Disperse count of volume",
+		"type": "Integer",
+		"default": null,
+		"required": false
+	}, {
+		"name": "Volume.disperse_data_count",
+		"help": "Disperse data count of volume",
+		"type": "Integer",
+		"default": null,
+		"required": false
+	}, {
+		"name": "Volume.redundancy_count",
+		"help": "Redundancy count of volume",
+		"type": "Integer",
+		"default": null,
+		"required": false
+	}, {
+		"name": "Volume.transport",
+		"help": "Transport type for volume",
+		"type": "String",
+		"default": null,
+		"required": false
+	}, {
+		"name": "Volume.force",
+		"help": "If force execute the action",
+		"type": "Boolean",
+		"default": null,
+		"required": false
+	}]
+}, {
+	"name": "GlusterDeleteVolume",
+	"method": "DELETE",
+	"attributes": [{
+		"name": "Volume.volname",
+		"help": "Name of gluster volume",
+		"type": "String",
+		"default": null,
+		"required": true
+	}, {
+		"name": "Volume.vol_id",
+		"help": "ID of the gluster volume",
+		"type": "String",
+		"default": null,
+		"required": true
+	}]
+}]
+----------
+
+=== List Volumes
+
+Sample Request
+
+----------
+curl -XGET http://127.0.0.1/api/1.0/5291c055-70d3-4450-9769-2f6fd4932afb/GetVol
+umeList
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+
+[{
+	"cluster_id": "5291c055-70d3-4450-9769-2f6fd4932afb",
+	"deleted": "",
+	"name": "vol1",
+	"status": "Stopped",
+	"vol_id": "80e98588-176c-4220-b41c-e95cd7137aff",
+	"vol_type": "Distribute",
+	"mount_opts": "",
+	"path": "dhcp-1.lab.tendrl.example:/root/bricks/vol1_b2",
+	"port": "49152",
+	"fs_type": "",
+	"hostname": "dhcp-1.lab.tendrl.example",
+	"brick_count": "2"
+}, {
+	"name": "Volume_009",
+	"status": "None",
+	"vol_id": "b0d4daa8-2ba6-4ea4-b510-c486c1b62e9f",
+	"vol_type": "Distribute",
+	"hostname": "dhcp-1.lab.tendrl.example",
+	"mount_opts": "",
+	"path": "dhcp-1.lab.tendrl.example:/root/bricks/vol9_b1",
+	"port": "None",
+	"cluster_id": "5291c055-70d3-4450-9769-2f6fd4932afb",
+	"fs_type": "None",
+	"brick_count": "1",
+	"deleted": ""
+}]
+----------
+
+=== Create Volume
+
+Assuming you have pre-existing bricks, we can create a new volume in a specific cluster.
+
+Sample Request
+----------
+curl -XPOST -d '{"Volume.volname":"Volume_009","Volume.bricks":["dhcp-1.lab.ten
+drl.example:/root/bricks/vol9_b1"]}' http://127.0.0.1/api/1.0/5291c055-70d3-4450-9769-2f6fd4932afb/GlusterCreateVolume
+----------
+
+Sample Response
+----------
+Status: 202 Accepted
+{ job_id: "3784922e33e8bec939be5e626e21a174" }
+----------
+
+=== Delete Volume
+
+Sample Request
+----------
+curl -XDELETE -d '{"Volume.volname":"Volume_009","Volume.vol_id":"f2e68a00-71c9
+-4efc-a28b-7204acf9ecff"}' http://127.0.0.1/api/1.0/5291c055-70d3-4450-9769-2f6
+fd4932afb/GlusterDeleteVolume
+----------
+
+Sample Response
+----------
+Status: 202 Accepted
+{ job_id: "3784922e33e8bec939be5e626e21a174" }
+----------
+

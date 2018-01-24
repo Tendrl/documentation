@@ -1,0 +1,149 @@
+// vim: tw=79
+= Ceph Pool
+
+The document describes the flows related to Ceph pools.
+
+== List of available clusters
+
+Find the list of available clusters
+
+----------
+curl -XGET http://127.0.0.1/api/1.0/GetClusterList
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+[{
+	"cluster_id": "8b0c637d-f5f7-40f6-acd9-50d5feb5f4b3",
+	"sds_name": "ceph",
+	"sds_version": "10.2.3"
+}]
+----------
+
+== Cluster Flows
+
+
+Find the list of available flows for a specific cluster.
+
+----------
+curl -XGET http://127.0.0.1/api/1.0/8b0c637d-f5f7-40f6-acd9-50d5feb5f4b3/Flows
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+[{
+	"name": "CephCreatePool",
+	"method": "POST",
+	"attributes": [{
+		"name": "Pool.poolname",
+		"help": "Name of the Ceph pool",
+		"type": "String",
+		"default": null,
+		"required": true
+	}, {
+		"name": "Pool.pg_num",
+		"help": "The total number of placement groups for placement purposes.",
+		"type": "Integer",
+		"default": null,
+		"required": true
+	}, {
+		"name": "Pool.min_size",
+		"help": "sets the number of replicas for objects in the pool",
+		"type": "Integer",
+		"default": null,
+		"required": true
+	}, {
+		"name": "Tendrl_context.sds_name",
+		"help": "gluster|ceph",
+		"type": "String",
+		"default": null,
+		"required": true
+	}, {
+		"name": "Tendrl_context.sds_version",
+		"help": "Sds version eg: 1.2.3",
+		"type": "String",
+		"default": null,
+		"required": true
+	}]
+}, {
+	"name": "CephDeletePool",
+	"method": "DELETE",
+	"attributes": [{
+		"name": "Pool.pool_id",
+		"help": "id of the pool",
+		"type": "Integer",
+		"default": null,
+		"required": true
+	}, {
+		"name": "Tendrl_context.sds_name",
+		"help": "gluster|ceph",
+		"type": "String",
+		"default": null,
+		"required": true
+	}, {
+		"name": "Tendrl_context.sds_version",
+		"help": "Sds version eg: 1.2.3",
+		"type": "String",
+		"default": null,
+		"required": true
+	}]
+}]
+----------
+
+=== List pools
+
+Sample Request
+
+----------
+curl -XGET
+http://127.0.0.1/api/1.0/8b0c637d-f5f7-40f6-acd9-50d5feb5f4b3/GetPoolList
+----------
+
+Sample Response
+
+----------
+Status: 200 OK
+[{
+	"pool_id": "0",
+	"poolname": "rbd",
+	"updated": "1479895109.37",
+	"cluster_id": "8b0c637d-f5f7-40f6-acd9-50d5feb5f4b3",
+	"min_size": "2",
+	"pg_num": "64"
+}]
+----------
+
+=== Create Pool
+
+Sample Request
+----------
+curl -XPOST -d
+'{"Pool.poolname":"testPool","Pool.pg_num":128,"Pool.min_size":1}'
+http://127.0.0.1/api/1.0/8b0c637d-f5f7-40f6-acd9-50d5feb5f4b3/CephCreatePool
+----------
+
+Sample Response
+----------
+Status: 202 Accepted
+{ job_id: "ab693a6787ffa5de34975eabd3341c54" }
+----------
+
+=== Delete Pool
+
+Sample Request
+----------
+curl -XDELETE -d '{"Pool.poolname":"testPool","Pool.pool_id":"f2e68a00-71c9
+-4efc-a28b-7204acf9ecff"}' http://127.0.0.1/api/1.0/5291c055-70d3-4450-9769-2f6
+fd4932afb/CephDeletePool
+----------
+
+Sample Response
+----------
+Status: 202 Accepted
+{ job_id: "3784922e33e8bec939be5e626e21a174" }
+----------
+
