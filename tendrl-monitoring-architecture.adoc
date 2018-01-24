@@ -1,0 +1,204 @@
+// vim: tw=79
+:imagesdir: ./images
+
+= Tendrl Monitoring Overview
+
+To observe and check the progress or quality of (something) over a period of
+time is monitoring. Based on the types of resources to be monitored, it can be
+classified as:
+
+* Performance monitoring
+* Status monitoring
+
+The status monitoring can be further classified as:
+
+* Process status monitoring
+* Resource status monitoring
+
+The essential functionalities provided by any performance moniotoring systems
+are:
+
+* Statistics collection
+* Thresholding on the collected statistics
+* Alerting/notifying the users about the threshold breach if any.
+
+The essential functionalities provided by any status moniotoring systems are:
+
+* Event listeners to listen to change in status of the resource if provided by
+  the sds framework or a continous/scheduled hearbeat to monitor changes in
+  status of resource.
+* Alerting/notifying the users about the threshold breach if any.
+
+In accordance with the above classifications and requirements the stack for
+monitoring tendrl managed systems is as follows:
+
+
+image::tendrl_monitoring_components_overview.png[Tendrl Monitoring Components]
+
+== Overview Of Components Of Monitoring Stack
+
+=== Tendrl Performance (performance_monitoring)
+
+It is a separate service that runs outside tendrl core stack and it relies on
+the state information in tendrl’s central store for its functioning. Typically
+it can be co-resident with tendrl application but nothing necessiates this.
+Following are its sub-components based on the functionalities:
+
+* Api Layer : This layer will serve the following responsibilities.
+  ** Serve the time series data stored in time series database.
+  ** The apis internally use a plugin based approach for querying the
+     time-series performance data which eases the task of supporting multiple
+     time-series databases.
+* Aggregator : This module aggregates atomic stats(ex: cluster utilization) to
+  composite(system utilization) stats which will be required by UI for the
+  dashboards.
+
+
+=== Tendrl Alerts (tendrl_alerts)
+
+* A separate service that is installed with Tendrl App.
+* It serves the following responsibilities:
+  ** Watch for new alert/notification details in central store.
+    *** This application utilizes the etcd's watch capability to sense changes
+        in etcd.
+  ** Send out alerts to users configured to receive them. Following are the
+     currently supported means of notifying alerts to configured users:
+    *** Email alerting:
+
+--------
+    Note: This might require users to enable access for less secure apps in
+          their mail server.
+--------
+
+=== Time Series DB
+
+* This will hold the data collected by collectd and also those aggregated by
+  the aggregator
+* Graphite will be used as time series db.
+  ** It consists of three software components:
+    *** carbon - a high-performance service that listens for time-series data
+    *** whisper - a simple database library for storing time-series data
+    *** graphite-web - Graphite's user interface & API for rendering graphs
+        and dashboards
+  ** Metrics get fed into the stack via the Carbon service, which writes data
+     out to Whisper databases for long-term storage.
+  ** Advantages:
+    *** Graphite's web platform offers a variety of output styles and formats,
+        including raw images, CSV, XML, and JSON
+    *** Allows querying statistics for specific time-ranges and intervals.
+    *** Allows wild cards in query paths
+
+
+=== Collectd
+
+* A ​daemon​ which collects performance statistics periodically.
+* It is actively developed and supported and well documented.
+* Everything in collectd is done in plugins.
+  ** It comes with over 90 plugins​ and is extensible.
+  ** Collectd activates those plugins that are loaded and/or configured in
+     collectd’s conf files.
+  ** Changes in conf files will be effected in collectd only on restart of
+     the collectd daemon.
+* It serves the following responsibilities:
+  ** Collect the physical and logical resource utilizations using configured
+     plugins.
+  ** Watch for the breach of configured thresholds and trigger execution of
+     custom plugin.
+* Collectd comes packaged readily with a plugin to write collectd measured
+  statistics onto graphite db.
+
+
+Apart from the above, components of tendrl core stack also play important role
+in the functioning of tendrl monitoring stack.
+
+
+=== Tendrl Node Agent
+
+* The tendrl node agent opens a socket for collectd to send threshold breach
+  notifications to it.
+* The node agent then puts any threshold breach message from collectd onto
+  etcd.
+
+
+=== Tendrl SDS-Bridge
+
+* sds-bridge processes anything of interest to it on the node-agent exposed
+  threshold notification socket.
+* The sds-bridge also performs status monitoring.
+  ** In case of gluster, the gluster-bridge listens to and handles the events
+     that the gluster cluster provides.
+  ** In case of ceph, the ceph-bridge handles state changes in ceph resources
+
+
+== Generic Working Principle
+
+* Monitoring application connects to etcd and uploads the default monitoring
+  configuration and flows.
+* As the final step of creating/managing an entity in tendrl, the appropriate
+  collectd plugin configurations will be made on suitable nodes in accordance
+  with the following:
+  ** Monitoring application triggers the monitoring provisioning flow on every
+     node for node monitoring via the core API.
+  ** The provisioning flow for the monitoring stack installs collectd-related
+     pieces on every node and generates the configuration files from templates
+     shipped with the collectd plugins on nodes.
+* The configured plugins start collecting the respective utilizations at every
+  configured intervals of time and push them to the write destination using
+  the plugin configured as write plugin.
+* Parallely, every configured intervals of time the aggregator module of the
+  central monitoring application will collect the instant value of stats from
+  the time series db and update the stats of interest to tendrl into tendrl’s
+  central store and also aggregates these stats @ cluster and system levels
+  and push back these stats to time series db and also to the central store.
+  These aggregations are typically inline with the UX designs/requirements.
+* The alert to notification flow is as under:
+  ** Node agent is responsible for transporting the alerts to etcd
+  ** Process state related alerts will be gathered from systemd.
+  ** Cluster state related alerts will be generated by the bridges
+  ** Performance and threshold monitoring alerts are generated by the collectd
+     using the collectd's threshold plugin and in accordance with configured
+     thresholds.
+  ** One socket is connected to for writes from collectd, read-only from the
+     node agent and read-write from the bridge
+  ** Any alert on that socket is always taken to etcd by the node agent
+  ** Bridge can read the alerts and act on only the ones it can act on, ignore
+     the rest it can also generate it's own alerts and put them on the socket
+     for node agent to transport to etcd
+  ** The alerting application will be responsible for:
+    *** Watching alerts in etcd's /alerts directory and sending out mails or
+        sms or snmp traps.
+    *** Invoke the tendrl api callback to notify tendrl api of a new alert
+        (and then the tendrl api will notify it to ui).
+* Any queries for time series database will be served by the tendrl api which
+  internally proxies to the capabilities exposed by monitoring application’s
+  api layer.
+
+
+== Packaging
+
+The monitoring application should be treated as an add-on stack.
+
+----
+Note: This means that the corresponding code, templates, configurations and
+      flows of monitoring stack need to be shipped separately, with assumption
+      that the core stack is already started.
+----
+
+* sds-specific plugins and corresponding templates will be maintained as part
+  of https://github.com/Tendrl/performance_monitoring[performance_monitoring]
+  under a sds specific sub-package but it will be separately packaged as
+  tendrl-sds-monitoring.
+  ex: tendrl-gluster-monitoring and tendrl-ceph-monitoring
+* Physical resource plugins and corresponding templates will be maintained as
+  part of
+  https://github.com/Tendrl/performance_monitoring[performance_monitoring]
+  under sub-package node_monitoring and it will be packaged separately as
+  tendrl-node-monitoring
+* Alerting module will be maintained as part of separate repository
+  https://github.com/Tendrl/alerting[alerting] and packaged separately as
+  tendrl-alerting but installed along with tendrl core stack.
+* Monitoring aggregator and monitoring api layer will be will be maintained as
+  part of
+  https://github.com/Tendrl/performance_monitoring[performance_monitoring] and
+  packaged as tendrl-performance-monitoring
+
