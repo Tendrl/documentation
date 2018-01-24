@@ -1,0 +1,64 @@
+// vim: tw=79
+
+:imagesdir: ./images
+:toc:
+
+= Build Process
+
+Tendrl project uses Jenkins and Fedora Copr for the build processing.
+Jenkins is one open source tool to perform continuous integration and build
+automation. Continuous integration is a process in which all tendrl development
+work is integrated. The resulting artifacts are automatically created.
+
+For tendrl project Jenkins is configured to execute a predefined list of steps
+to create tar file and make the source rpm and initiate fedora copr to start
+the build using the given source rpm.
+
+The trigger for this execution can be time or event based. For our tendrl
+project it is configured to trigger after a new commit in a Git repository
+or for every night some time between 12:00 AM (midnight) to 7:59 AM
+
+The list of steps for every build trigger as follows:
+
+    fetch the latest source from the master
+
+    construct the release version based on time stamp
+
+    make a tar from the source
+
+    build an source rpm
+
+    give it to fedora copr for building the package for different distributions
+
+== Source details
+There are individual jobs where created for every tendrl project and it is
+configured to fetch the source from master branch. Internally it does the git
+clone to the purticular repo.
+For example, url https://github.com/Tendrl/commons is configured for commons.
+The following image shows the Jenkins dashboard which shows the list of tendrl
+package builds. We can get the details of the latest build by clicking the
+project listed in the dashboard.
+
+image::tendrl-jenkins-dashboard.png[Tendrl Jenkins Dashboard]
+
+== Release version
+For every build, Jenkins will update the release version with time stamp
+to identify a build time.
+
+== Build Details
+Jenkins URL: http://10.70.42.16:8080/
+We can get the list of recent build history of a project by clicking the
+particular job.
+
+How to see the last git-commit of a build
+By clicking a latest or a particular build of a project from the build history
+we can get the github repo details. Commit id will be shown as Revision.
+
+image::build-details.png[Tendrl Jenkins Build Details]
+
+Once the build is done, we can get the package rpm in fedora copr
+build packages: https://copr.fedorainfracloud.org/coprs/tendrl/tendrl/packages/
+build path: https://copr.fedorainfracloud.org/coprs/tendrl/tendrl/builds/
+By clicking the build-id and Chroot-Name we can get rpms for a project.
+
+image::fedora-copr-build.png[Fedora Copr Build]
