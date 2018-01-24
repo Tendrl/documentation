@@ -1,0 +1,95 @@
+// vim: tw=79
+= etcd installation and configuration for Tendrl
+
+== etcd
+etcd is an open-source distributed, consistent key value store that provides a
+reliable way to store and access the data for shared configuration and service
+discovery across a cluster. Tendrl uses etcd as its central store to persist
+all the sds information, configuration definitions and tendrl management data.
+
+== Installation
+The package is included in the CentOS Extras repository, enabled by default.
+etcd package can be installed in any server. However for tendrl application,
+it can be installed in the server where tendrl-api is installed. The package
+etcd can be installed by running "yum install etcd".
+
+== Configuration
+After installing the etcd, it needs few configuration changes before starting
+the etcd service.
+Enable all the lines where there is localhost written in /etc/etcd/etcd.conf
+and replace localhost with actual IP or hostname of the machine and then start
+etcd server
+
+```
+ETCD_LISTEN_PEER_URLS="http://<ip-where-etcd-running>:2380"
+ETCD_LISTEN_CLIENT_URLS="http://<ip-where-etcd-running>:2379"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://<ip-where-etcd-running>:2380"
+ETCD_INITIAL_CLUSTER="default=http://<ip-where-etcd-running>:2380"
+ETCD_ADVERTISE_CLIENT_URLS="http://<ip-where-etcd-running>:2379"
+```
+After updating the configuration file, the service can be started by running:
+
+```
+$ service etcd start
+```
+
+The running status of service etcd can be verified using
+
+```
+$ service etcd status
+```
+
+also can verify if the etcd is properly functioning by accessing etcd via API
+from browser, the api is as follows: http://<ip-addr/hostname>:2379/v2/keys/
+This should give a basic json output.
+
+== Configuration for tendrl packages
+Each tendrl components using its own configuration file for accessing
+and connecting with etcd. The Port number and ip address / hostname details
+should be configured in their respective configuration file.
+
+ex:-
+```
+etcd_port: 2379
+etcd_connection: <IP>
+....
+```
+
+The following are the configuration file path of the tendrl components
+using to connect with etcd.
+
+tendrl-node-agent::
+etc/tendrl/node-agent/node-agent.conf.yaml
+
+tendrl-gluster-integration::
+etc/tendrl/gluster-integration/gluster-integration.conf.yaml
+
+tendrl-ceph-integration::
+etc/tendrl/ceph-integration/ceph-integration.conf.yaml
+
+alerting::
+etc/tendrl/alerting.conf.yaml
+
+performance-monitoring::
+etc/tendrl/performance-monitoring/performance-monitoring.conf
+
+node-monitoring::
+etc/tendrl/node-monitoring/node-monitoring.conf.yaml
+
+tendrl-api::
+etcd.yml is a configuration file used by tendrl-api to locate and connect
+with etcd. This file will be installed by an rpm in /etc/tendrl directory.
+Whereas this file may exist in config directory of the place where its
+deployed thru bundler installation.
+
+edit the etcd.yml file and update the 'host' value with the ip of the
+machine where etcd is running. And update the username and password.
+The default username and password will be an empty string.
+```
+ex:-
+  :base_key: ''
+  :host: '<ip-of-the-machine-where-etcd-is-running'
+  :port: 2379
+  :user_name: ''
+  :password: ''
+```
