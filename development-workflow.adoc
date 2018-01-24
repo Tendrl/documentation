@@ -12,7 +12,7 @@ The https://www.redhat.com/mailman/listinfo/tendrl-devel[tendrl-devel mailing
 list] serves as the primary discussion list.
 
 Github Pull Requests::
-All the development is carried out via Pull Request to any of the Tendlr
+All the development is carried out via Pull Request to any of the Tendrl
 repositories. This allows CI checks and code reviews before any code is merged.
 
 Github Issues::
