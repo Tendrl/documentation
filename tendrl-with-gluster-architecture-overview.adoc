@@ -10,4 +10,4 @@ best of breed experience to monitoring Gluster.
 The following is an at-a-glance view of the Tendrl stack used to manage and monitor 
 Gluster trusted storage pools.
 
-image::tendrl_and_gluster_architecture_at-a-glance[Tendrl with Gluster Architecture At-A-Glance]
+image::tendrl_and_gluster_architecture_at-a-glance.jpg[Tendrl with Gluster Architecture At-A-Glance]
