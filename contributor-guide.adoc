@@ -1,0 +1,13 @@
+= Tendrl new contributor guide.
+
+== Tendrl PR review tips
+
+- [*] Check PR for CPU impact (long running loops, blocking calls etc)
+- [*] Check for IO (disk and network, etcd/db) impact  (local files, network calls to etcd or others, etcd performance)
+- [*] Check for Platform, SDS, Integrations and Tendrl security impact
+- [*] Check Scalability (does the PR work in a multi node Tendrl deployment and sds cluster)
+- [*] Check readability and maintainability of the code
+- [*] Check packaging and infra and details introduced in the PR
+- [*] Check QE impact (unit tests, functional/integration test-ability)
+- [*] Check for core Tendrl logic  (does the patch adhere to Tendrl namespaces, Tendrl definitions, Tendrl data model and ops model, use of commons etc)
+- [*] Check for python syntax and object oriented programming and software design principles

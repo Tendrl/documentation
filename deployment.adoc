@@ -1,0 +1,139 @@
+// vim: tw=79
+
+:imagesdir: ./images
+:toc:
+
+= Deploying Tendrl
+
+This document serves as the master document that ties together the installation
+of the various tendrl components. Wherever applicable, the individual
+components' installation documentation has been linked to. This document
+primarily talks about the deployment layout and the installation of global
+components such as etcd.
+
+Any tendrl deployment, logically, would look as depicted in the components
+overview diagram below. The exact physical layout and the number of the nodes
+for various deployment scenarios is discussed in the rest of the document.
+
+image::tendrl_core_components_overview.png[Tendrl Core Components Overview]
+
+
+== Deployment Layouts
+
+=== Non-HA Layout
+
+The following (physical or virtual) layout could be used for poc or development
+purposes:
+
+Tendrl Master::
+* web server (apache)
+* tendrl api, proxied behind the web server
+* tendrl ui, served via the web server
+* etcd
+
+Storage Node::
+* storage system (ceph, gluster etc.)
+* tendrl node agent
+* tendrl bridge (node agent will install and configure the bridge as
+appropriate, depending upon the storage system)
+
+==== Post Deployment
+
+The following endpoints should be available for client consumption:
+
+frontend:: http://tendrl_master_host/
+api:: http://tendrl_master_host/api/1.0/
+
+
+== General System Setup Considerations
+
+=== Firewalling
+
+Following are the defaults for various components. Ensure that they're
+configured on the nodes on which these components will run, depending upon your
+chosen layout.
+
+etcd:: tcp/2379
+apache:: tcp/80
+api:: same as apache for production, tcp/9393 for the development server
+frontend:: same as apache
+
+=== SELinux Configuration
+
+Tendrl does not currently support running on SELinux enabled systems. In case
+there are problems running tendrl on such systems, please turn SELinux off.
+
+Should you want to run tendrl on an SELinux enabled system, there is a specific
+SELinux configuration change for apache on CentOS 7 that needs to be made. It
+is covered in the
+https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#running-on-port-80[Running
+on Port 80] section of the api installation documentation.
+
+
+== Component Installation
+
+=== etcd
+
+NOTE: All the commands are run as a regular user that has `sudo` privileges.
+
+IMPORTANT: The etcd connection details are required for deploying all the other
+components.
+
+* Install https://github.com/coreos/etcd/releases/tag/v2.3.7[etcd >= 2.3.x && <
+3.x].
++
+On CentOS 7, etcd is available in the `extras` repository.
+
+ $ sudo yum install etcd
+
+* By default, etcd will listed on the loopback interface. Edit the etcd
+configuration file `/etc/etcd/etcd.conf` to configure it to listen on the
+public interface.
+* Ensure that the firewall configuration allows inbound connections to etcd.
+* Enable and start the service
+
+ $ sudo systemctl enable etcd.service
+ $ sudo systemctl start etcd.service
+
+
+=== From Source on CentOS 7
+
+NOTE: The definition and flow yaml files are uploaded to etcd by the node
+agents upon starting up. The api application reads these yaml files and brings
+up the endpoints based on them.
+
+Node Agent::
+Install the node agent on every node of the storage cluster using the
+documentation at https://github.com/Tendrl/node_agent/blob/master/README.adoc.
+
+Tendrl API::
+The api installation instructions are in the
+https://github.com/Tendrl/tendrl-api/blob/master/README.adoc[api repository].
+Only follow the instructions from the sections listed below:
+  . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#system-setup[System Setup]
+  . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#install-tendrl-api[Install tendrl-api].
+    * Install only the production dependencies if you want only to run the api.
+    * Install everything if you want to also have the development setup as well.
+  . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#configuration[Configuration].
+  . https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#running-on-port-80[Running on Port 80].
+
+Tendrl Frontend::
++
+NOTE: Currently, the frontend is served via apache using the same configuration
+file that ships with and is used by the api, as discussed in Step 2 under the
+https://github.com/Tendrl/tendrl-api/blob/master/README.adoc#running-on-port-80[instructions
+for running the api on port 80].
++
+Before deployment, the frontend needs to be compiled first. The compilation
+instructions are in the section `Step 2: Building from source` in the
+https://github.com/Tendrl/tendrl_frontend/blob/master/docs/deployment.adoc[frontend
+deployment document].
++
+After compilation, copy over the assets in the `dist` directory to
+`/var/www/tendrl`, where apache will serve them from.
+
+ [tendrl_frontend] $ sudo cp -r dist/* /var/www/tendrl/
++
+The frontend should now be available at the root url (eg.
+http://tendrl_master_host/) via apache.
+
