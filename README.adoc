@@ -18,7 +18,7 @@ to a developer would be hosted in the same repository as the code
   Guidelines] explains the architectural decisions.
 * https://github.com/Tendrl/documentation/blob/master/tendrl-core-components-overview.adoc[Tendrl
   Core Components Overview] describes the various components in the Core Stack.
-
+* https://github.com/Tendrl/documentation/blob/master/tendrl-with-gluster-architecture-overview.adoc[Tendrl with Gluster Monitoring] shows the monitoring stack for Gluster with Tendrl monitoring
 
 == How to use this repository?
 
