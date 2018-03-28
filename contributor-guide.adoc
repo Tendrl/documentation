@@ -2,8 +2,9 @@
 
 == Tendrl PR review tips
 
-- [*] Check PR for CPU impact (long running loops, blocking calls etc)
+- [*] Check PR for CPU and memory impact (long running loops, blocking calls etc)
 - [*] Check for IO (disk and network, etcd/db) impact  (local files, network calls to etcd or others, etcd performance)
+- [*] Check PR for application response time impact 
 - [*] Check for Platform, SDS, Integrations and Tendrl security impact
 - [*] Check Scalability (does the PR work in a multi node Tendrl deployment and sds cluster)
 - [*] Check readability and maintainability of the code
