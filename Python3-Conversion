@@ -1,0 +1,159 @@
+Tendrl python3 Package Conversion
+
+Introduction
+Python 3 has good standards and a powerful library over Python 2.
+It works faster in runtime. Many Machine Learning and Deep Learning libraries
+are also improved and enhanced for good model development. All the security fixes
+and updates and new fixes are mostly now being added for python3 packages only.
+
+Most of the tendrl packages are python based. Currently, tendrl packages are
+not supportive of python3. It requires some easy and minimal code change for
+python3 support. Any new developments, enhancement and fixes are mainly now
+going to python3 packages only. By considering these benefits, it's highly
+recommended to update tendrl packages to support python3.
+
+How to check whether python3 support is available for a particular
+python module or a python package ?
+We can run “pydoc3 modules” and check it out the module existence
+Or It returns error on importing ex: python3 -c “import <module name>
+
+Package wise analysis and support
+Every tendrl packages are having its own dependency and each dependencies 
+are having its sub dependencies. Some of the dependencies are available downstream 
+for python3 and some are not available. This document will provide details about the
+availability of such packages and the required changes. There are approximately 
+around 70+ packages we need to work on.
+
+We need to add python3 support for all the tendrl-x packages and its dependencies 
+such as tendrl-commons, tendrl-node-agent, tendrl-gluster-integration, 
+tendrl-monitoring-integration, tendrl-notifier, tendrl-selinux and tendrl-ansible.
+The following are the list of packages and its dependency we need to support python3.
+2.1 Tendrl commons and its dependencies and sub dependencies
+
+Python3-map
+Source: https://github.com/pcattori/maps
+Changes: 
+Need to write build scripts and to build python3 ( namedfixedkeymap.py, utils.py and frozenmap.py )
+Seen a dictonary.items() which will return an array in python2 where it needs to be 
+converted to list in python3. However this change is not required because 
+it's used only to get the hash value. Ex:- hash(frozenset(self.items())) in frozenmap.py
+We need to build this package for downstream
+
+Python3-dateutil  https://github.com/dateutil/dateutil
+We need to build this package for downstream
+i)   Sub dependency: python3-six
+     We need to build python3-six
+
+Python3-dns
+Python3-requests-toolbelt  https://github.com/requests/toolbelt
+Python3-idna
+https://github.com/Legrandin/pycryptodome
+
+Python3-etcd
+Python3-urllib3
+Dnspython3
+
+Python3-ruamel-yaml
+Pytz3
+Python3-psutil
+python3-IPy
+
+2.2 . Tendrl gluster integration and its dependencies and sub dependencies
+
+Python-flask
+Python-cherrypy
+Python-paste
+2.3. Tendrl node agent and its dependencies and sub dependencies
+Python-jinja2 and its dependencies
+Python-netifaces and its dependencies
+Python-netaddr and its dependencies
+Python-setuptools and its dependencies
+Python-urllib3 and its dependencies
+Python-jinja2
+2.4. Tendrl monitoring integration and its dependencies and sub dependencies
+The following packages and its dependencies
+Python-carbon
+Python-whisper
+Python-requests
+Tendrl-grafana-plugins
+Python-werkzeug
+Python-flask
+Python-cherrypy
+2.5. Tendrl selinux and its dependencies and sub dependencies
+tendrl-grafana-selinux
+2.6. Tendrl notifier and its dependencies and sub dependencies
+Python-pyasn1
+Python-crypto
+Pysnmp
+pysmi
+2.7. Tendrl-ansible
+python-dns
+
+
+2. 8 For tendrl other packages and its dependencies
+We may need to build other dependencies for el8 support for redhat.
+Also we need to check how it works with el8.
+
+Sphinx
+Yamllint
+Ansible
+Ruby
+Rubygem-activemodel
+Rubygem-bcrypt
+Rubygem-i18n
+Rubygem-json
+Rubygem-minitest
+Rubygem-thread_safe
+Rubygem-mixlib-log
+Rubygem-puma
+Rubygem-rake
+Rubygem-rack
+Rubygem-tilt
+Rubygem-bundler
+Rubygem-builder
+Rubygem-tzinfo
+Rubygem-etcd
+Rubygem-rack-protection
+Rubygem-activesupport
+Rubygem-sinatra
+Collectd
+Collectd-ping
+Hwinfo
+Rsyslog
+
+4. Common code change required across tendrl for python3 support
+This will provide a clear idea about how much work is required. 
+There are places in tendrl needs some changes to adopt python3 support. 
+In general it's very minimal. However we need to test completely because 
+some required changes might change the workflow.
+
+ __builtin__ is used in tendrl but it's not supported in python3. We need to use builtins
+Input ( )       function is used in tendrl this could be used with eval()
+Iteritems ( )   is used for dictonary objects in tendrl. This is not supported in python3
+Values ( )      function is used in tendrl. This will not return array in python3.
+                We need to convert using list ( ) to get an array.
+Keys ( )        should be used with list ( )
+Ex: if 'success' in util_det.keys() will return entirely different result in python3
+Sample places:  gluster-integration/tendrl/gluster_integration/sds_sync/utilization.py
+Filter ( )      function can not be used in python3. We need to run thru the items and return an array. Ex:-
+                In tendrl its used as: filter(None, out.split("\n"))
+Division of values issues. Python3 returns decimal values for the divide 
+output where as python2 does not return any decimal values on division of numbers. 
+So we need to either use round function wherever 
+we divide values in tendrl. Or we can use // in place of /
+Text versus binary data. Str type can not be used for binary and 
+text type in Python3. For example str(b'3') == b'3' returns True in python2 
+and False in python3. This may change the decisions. 
+Need to check the places wherever we use in tendrl.
+Update setup.py to support python3
+Configparser not available for python3. tendrl/commons/utils/ini2json.py 
+Need to Use configparser.  Sample places used this in 
+tendrl: node-agent/tendrl/node_agent/ini2json.py
+Print should be used with parentheses. gluster-integration/etc/create_brick.py
+In tendrl many places we were used lambda operations which are not supported by python3. 
+Sample places: gluster-integration/tendrl/gluster_integration/sds_sync/__init__.py,
+gluster-integration/tendrl/gluster_integration/sds_sync/brick_utilization.py
+Reload ( ) function can not be used directly in python3. 
+We need to use from importlib module. Sample place in 
+tendrl: node-agent/tendrl/node_agent/monitoring/collectd/collectors/gluster/tendrl_gluster.py
+Xrange, basestring not available in python3. node-agent/tendrl/node_agent/monitoring/collectd/collectors/gluster/low_weight/tendrl_glusterfs_brick_utilization.py
